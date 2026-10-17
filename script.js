@@ -35,6 +35,9 @@ const products = [
     materials: "Густые шпаклёвки, краски и огнезащитные материалы.",
   },
 ];
+const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+let revealObserver;
+const revealSelector = ".page-hero, .section-heading, .category-card, .category-tile, .product-card, .step-card, .article-card, .benefit, .info-card, .rent-card, .fact, .summary-card, .empty-state, .form-card, .login-card, .contact-band";
 
 const categories = [
   { id: "painting", name: "Окрасочное оборудование", description: "Аппараты для безвоздушного нанесения красок и покрытий.", icon: "01", children: [["Аппараты до 6 л/мин", "category.html?category=painting&flow=compact"], ["Аппараты от 10 л/мин", "category.html?category=painting&flow=high"], ["Модели с QuickReel", "category.html?category=painting&feature=quickreel"]] },
@@ -91,7 +94,7 @@ function renderHeader() {
   const active = (name) => page === name ? ' aria-current="page"' : "";
   document.querySelector("#site-header").innerHTML = `<header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="NORD — главная"><span class="brand-mark" aria-hidden="true">N</span><span class="brand-copy"><span class="brand-name">NORD</span><span class="brand-caption">оборудование для дела</span></span></a>
+      <a class="brand" href="index.html" aria-label="NORD — главная"><span class="brand-mark" aria-hidden="true">N<i></i></span><span class="brand-copy"><span class="brand-name">NORD</span><span class="brand-caption">оборудование для дела</span></span></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Открыть меню"><span></span><span></span></button>
       <nav class="site-nav" id="site-nav" aria-label="Основная навигация">
         <details class="nav-catalog"><summary>Каталог⌄</summary><div class="mega-menu">${categories.map((item) => `<a href="category.html?category=${item.id}">${item.name}</a>`).join("")}<a href="catalog.html">Все категории и товары →</a></div></details>
@@ -103,7 +106,7 @@ function renderHeader() {
 }
 
 function renderFooter() {
-  document.querySelector("#site-footer").innerHTML = `<footer class="site-footer"><div class="container">
+  document.querySelector("#site-footer").innerHTML = `<footer class="site-footer"><span class="footer-watermark" aria-hidden="true">NORD</span><div class="container">
     <div class="footer-grid">
       <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NORD</span><span class="brand-caption">оборудование для дела</span></span></a><p class="footer-description">Оборудование для малярных и отделочных работ. Продажа и аренда.</p></div>
       <div><div class="footer-title">Каталог</div><div class="footer-links"><a href="catalog.html">Все оборудование</a><a href="category.html?category=painting">Окрасочные аппараты</a><a href="category.html?category=putty">Шпаклёвочные станции</a><a href="category.html?category=accessories">Комплектующие</a></div></div>
@@ -119,7 +122,7 @@ function breadcrumbs(current) {
 }
 
 function pageHero(title, lead, crumb) {
-  return `<section class="page-hero"><div class="container">${breadcrumbs(crumb)}<h1>${title}</h1><p class="lead">${lead}</p></div></section>`;
+  return `<section class="page-hero"><div class="page-hero-particles" aria-hidden="true"><i></i><i></i><i></i></div><div class="container">${breadcrumbs(crumb)}<p class="eyebrow">NORD / ДАВЛЕНИЕ · ПОТОК · ТОЧНОСТЬ</p><h1>${title}</h1><p class="lead">${lead}</p><div class="hero-pressure-scale" aria-hidden="true"><span>0</span><i></i><span>MAX</span></div></div></section>`;
 }
 
 function contactBand(title = "Нужна помощь с подбором?", text = "Расскажите о задаче — поможем выбрать подходящее оборудование.") {
@@ -132,13 +135,13 @@ function renderHome() {
       <div class="hero-actions"><a class="button button-primary" href="catalog.html">Перейти в каталог <span>→</span></a><a class="button button-outline" href="rent.html">Аренда оборудования</a></div>
       <div class="hero-points"><span>Продажа и аренда</span><span>Подбор под задачу</span><span>Москва и доставка</span></div>
     </div>
-    <div class="hero-visual"><img src="${productImage(products[1], 1)}" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div></div>
+    <div class="hero-visual"><span class="hero-podium" aria-hidden="true"></span><img src="${productImage(products[1], 1)}" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp hero-chip hero-chip-model"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div><div class="hero-stamp hero-chip hero-chip-flow"><strong>11 л/мин</strong><span>Подача материала</span></div><div class="hero-stamp hero-chip hero-chip-pressure"><strong>230 бар</strong><span>Рабочее давление</span></div><div class="hero-flow-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
   </div></section>
   <section class="section"><div class="container"><div class="benefit-strip"><div class="benefit"><span class="benefit-icon">↗</span><div><strong>Подбор техники</strong><span>С учётом задачи и материала</span></div></div><div class="benefit"><span class="benefit-icon">▣</span><div><strong>Продажа и аренда</strong><span>Варианты под ваш срок и объём</span></div></div><div class="benefit"><span class="benefit-icon">⌁</span><div><strong>Комплектующие</strong><span>Оснащение для рабочего процесса</span></div></div><div class="benefit"><span class="benefit-icon">⌖</span><div><strong>Москва</strong><span>Самовывоз и доставка</span></div></div></div></div></section>
   <section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Каталог NORD</p><h2>Оборудование<br>под ваши задачи</h2></div><p>Выберите направление — или расскажите, что предстоит сделать, и мы поможем сориентироваться.</p></div><div class="category-grid">${categories.map((item) => `<a class="category-card" href="category.html?category=${item.id}"><span class="category-number">${item.icon} / НАПРАВЛЕНИЕ</span><div><h3>${item.name}</h3><p>${item.description}</p></div><span class="category-arrow" aria-hidden="true">↗</span></a>`).join("")}</div></div></section>
   <section class="section"><div class="container"><div class="section-heading"><div><p class="eyebrow">Выбор Nord</p><h2>Популярное оборудование</h2></div><a class="button button-outline" href="catalog.html">Весь каталог →</a></div><div class="product-grid">${products.map(productCard).join("")}</div></div></section>
   <section class="section"><div class="container"><div class="promo-banner"><div><p class="eyebrow">Новинка · QuickReel</p><h2>Шланг — под контролем.<br>Объект — в порядке.</h2><p>PUTTER 9528-X с системой для удобного сматывания шланга — для интенсивной работы с красками, шпаклёвками и огнезащитными материалами.</p></div><a class="button" href="${productUrl(products[1])}">Подробнее об аппарате <span>↗</span></a></div></div></section>
-  <section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Почему NORD</p><h2>Сначала задача.<br>Потом оборудование.</h2></div><p>Хороший подбор начинается не с громких обещаний, а с понимания материала, объёма работ и условий объекта.</p></div><div class="steps-grid"><article class="step-card"><span class="step-num">01</span><h3>Разбираемся в задаче</h3><p>Учитываем тип работ, материал, масштаб объекта и важные условия на площадке.</p></article><article class="step-card"><span class="step-num">02</span><h3>Сравниваем варианты</h3><p>Показываем характеристики и помогаем понять, чем модели отличаются для вашей работы.</p></article><article class="step-card"><span class="step-num">03</span><h3>Согласуем детали</h3><p>Уточняем наличие, комплектацию, срок аренды или условия покупки до оформления.</p></article></div></div></section>
+  <section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Почему NORD</p><h2>Сначала задача.<br>Потом оборудование.</h2></div><p>Хороший подбор начинается не с громких обещаний, а с понимания материала, объёма работ и условий объекта.</p></div><div class="steps-grid"><article class="step-card"><span class="step-num">01</span><h3>Разбираемся в задаче</h3><p>Учитываем тип работ, материал, масштаб объекта и важные условия на площадке.</p><svg class="step-flow-visual" viewBox="0 0 220 90" aria-hidden="true"><path class="flow-track" d="M12 70h49l22-36h57l20 22h48"/><circle cx="83" cy="34" r="6"/><circle cx="140" cy="34" r="4"/></svg></article><article class="step-card"><span class="step-num">02</span><h3>Сравниваем варианты</h3><p>Показываем характеристики и помогаем понять, чем модели отличаются для вашей работы.</p><svg class="step-flow-visual" viewBox="0 0 220 90" aria-hidden="true"><path class="flow-track" d="M12 70h43l18-45h39l20 45h75"/><path class="flow-secondary" d="M12 70h45l20-23h43l18 23h69"/></svg></article><article class="step-card"><span class="step-num">03</span><h3>Согласуем детали</h3><p>Уточняем наличие, комплектацию, срок аренды или условия покупки до оформления.</p><svg class="step-flow-visual" viewBox="0 0 220 90" aria-hidden="true"><path class="flow-track" d="M12 70h44l28-34h43l26 18h54"/><circle class="flow-pulse" cx="84" cy="36" r="5"/></svg></article></div></div></section>
   <section class="section"><div class="container split-panel"><div><p class="eyebrow">О компании</p><h2>Nord — техника<br>для дела.</h2><p class="lead">Мы работаем с оборудованием для малярных и отделочных работ: помогаем с выбором, предлагаем технику в продажу и аренду.</p><a class="button button-outline" href="about.html">О компании →</a></div><div class="about-facts"><div class="fact"><strong>Продажа</strong><span>Окрасочные аппараты и оснащение</span></div><div class="fact"><strong>Аренда</strong><span>Окраска, шпаклёвка, огнезащита</span></div><div class="fact"><strong>Подбор</strong><span>Под задачу и материал</span></div><div class="fact"><strong>Москва</strong><span>Точка выдачи оборудования</span></div></div></div></section>
   <section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Полезное</p><h2>Материалы и новости</h2></div><a class="button button-outline" href="blog.html">Все статьи →</a></div><div class="article-grid">${articles.slice(0, 3).map(articleCard).join("")}</div></div></section>
   <section class="section"><div class="container">${contactBand("Подберём оборудование под вашу работу", "Опишите материал, объём и условия объекта — обсудим подходящие варианты.")}</div></section>`;
@@ -276,6 +279,23 @@ function renderPage() {
     article: renderArticle,
   };
   document.querySelector("#main").innerHTML = (renderers[page] || renderHome)();
+  const main = document.querySelector("#main");
+  const existingCta = main.querySelector(".contact-band");
+  let cta = existingCta;
+  if (existingCta) {
+    const oldSection = existingCta.closest(".section");
+    const oldContainer = existingCta.closest(".container");
+    const oldWrapper = existingCta.parentElement;
+    existingCta.remove();
+    if (oldWrapper && oldWrapper !== oldContainer && !oldWrapper.children.length && !oldWrapper.textContent.trim()) oldWrapper.remove();
+    if (oldSection && oldContainer && !oldContainer.children.length && !oldContainer.textContent.trim()) oldSection.remove();
+  } else {
+    const template = document.createElement("template");
+    template.innerHTML = contactBand("Точная задача — точное решение", "Опишите материал и условия объекта. Подберём технику и согласуем следующий шаг.");
+    cta = template.content.firstElementChild;
+  }
+  main.insertAdjacentHTML("beforeend", `<section class="section is-contrast shared-cta"><div class="container"></div></section>`);
+  main.querySelector(".shared-cta .container").append(cta);
   document.title = `${(document.querySelector("#main h1")?.innerText || "NORD").replace(/\s+/g, " ").trim()} — NORD`;
   if (page === "contacts" && new URLSearchParams(location.search).has("order")) {
     const lines = Object.entries(cart)
@@ -287,6 +307,36 @@ function renderPage() {
     const messageField = document.querySelector("#contact-message");
     if (messageField && lines.length) messageField.value = `Интересует заказ:\n${lines.join("\n")}`;
   }
+  decorateSensors(main);
+  animateHeadlines(main);
+  revealTargets(main);
+}
+
+function decorateSensors(root) {
+  root.querySelectorAll(".product-card, .category-card, .category-tile, .rent-card, .step-card, .info-card, .article-card, .benefit, .fact, .summary-card, .empty-state, .form-card, .login-card").forEach((card, index) => {
+    card.classList.add("is-sensor");
+    card.style.setProperty("--sensor-order", index % 5);
+    if (card.querySelector(".sensor-gauge")) return;
+    card.insertAdjacentHTML("afterbegin", `<span class="sensor-gauge" aria-hidden="true"><svg viewBox="0 0 40 40"><circle class="sensor-gauge-track" cx="20" cy="20" r="16"/><circle class="sensor-gauge-value" cx="20" cy="20" r="16"/></svg><span>${String((index % 5) * 20 + 20).padStart(2, "0")}</span></span>`);
+  });
+}
+
+function animateHeadlines(root) {
+  root.querySelectorAll("h1").forEach((heading) => {
+    if (heading.dataset.animated) return;
+    heading.dataset.animated = "true";
+    heading.querySelectorAll(":scope > span").forEach((line, index) => {
+      line.classList.add("headline-line");
+      line.style.setProperty("--line-order", index);
+    });
+    [...heading.childNodes].forEach((node) => {
+      if (node.nodeType !== Node.TEXT_NODE || !node.textContent.trim()) return;
+      const line = document.createElement("span");
+      line.className = "headline-line";
+      line.textContent = node.textContent.trim();
+      heading.replaceChild(line, node);
+    });
+  });
 }
 
 function updateCounts() {
@@ -421,6 +471,8 @@ function filterProducts() {
           : /огнезащит/i.test(product.materials)));
   });
   container.innerHTML = matches.length ? matches.map(productCard).join("") : `<div class="empty-state"><h3>По вашему запросу ничего не найдено</h3><p>Измените фильтры или свяжитесь с нами для подбора.</p></div>`;
+  decorateSensors(container);
+  revealTargets(container);
   const count = document.querySelector("[data-result-count]");
   if (count) count.textContent = `Найдено: ${matches.length}`;
 }
@@ -455,12 +507,12 @@ renderPage();
 updateCounts();
 if (document.body.dataset.page === "category") filterProducts();
 
-const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 const siteHeader = document.querySelector(".site-header");
 let scrollFrame = 0;
 let latestScrollY = window.scrollY;
 const progress = document.createElement("div");
 progress.className = "page-progress";
+progress.innerHTML = `<svg viewBox="0 0 64 64" aria-hidden="true"><circle class="page-gauge-track" cx="32" cy="32" r="27"/><circle class="page-gauge-value" cx="32" cy="32" r="27"/><path class="page-gauge-needle" d="M32 32 46 20"/><circle class="page-gauge-hub" cx="32" cy="32" r="2.5"/></svg><span>BAR</span>`;
 progress.setAttribute("role", "progressbar");
 progress.setAttribute("aria-label", "Прокрутка страницы");
 progress.setAttribute("aria-valuemin", "0");
@@ -473,7 +525,11 @@ function updateScrollEffects() {
   scrollFrame = 0;
   const scrollable = document.documentElement.scrollHeight - window.innerHeight;
   const percentage = scrollable > 0 ? Math.min(100, Math.max(0, latestScrollY / scrollable * 100)) : 0;
-  progress.style.transform = `scaleX(${percentage / 100})`;
+  const gaugeValue = progress.querySelector(".page-gauge-value");
+  const circumference = 2 * Math.PI * 27;
+  gaugeValue.style.strokeDasharray = String(circumference);
+  gaugeValue.style.strokeDashoffset = String(circumference * (1 - percentage / 100));
+  progress.style.setProperty("--gauge-angle", `${percentage * 3.6}deg`);
   progress.setAttribute("aria-valuenow", String(Math.round(percentage)));
   siteHeader.classList.toggle("is-compact", latestScrollY > 32);
 
@@ -506,54 +562,140 @@ favicon.type = "image/svg+xml";
 favicon.href = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#1E4FA3"/><path d="M13 35V13h5l12 14V13h5v22h-5L18 21v14z" fill="white"/></svg>')}`;
 document.head.append(favicon);
 
-if (!motionPreference.matches && "IntersectionObserver" in window) {
-  document.querySelectorAll(".section").forEach((section) => {
-    const heading = section.querySelector(".section-heading h2");
-    if (heading?.textContent.includes("Сначала задача")) section.classList.add("is-contrast");
-    if (section.querySelector(".contact-band")) section.classList.add("is-contrast");
-  });
+document.head.insertAdjacentHTML("beforeend", `<style>@view-transition { navigation: auto; }</style>`);
 
-  const targets = document.querySelectorAll(".section-heading, .category-card, .category-tile, .product-card, .step-card, .article-card, .benefit, .info-card, .rent-card, .about-facts .fact, .contact-band");
-  const staggerCounters = new Map();
-  const observer = new IntersectionObserver((entries, currentObserver) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      const stepNumber = entry.target.querySelector(".step-num");
-      if (stepNumber && !stepNumber.dataset.counted) {
-        stepNumber.dataset.counted = "true";
-        const goal = Number(stepNumber.textContent) || 0;
-        const startedAt = performance.now();
-        const countUp = (now) => {
-          const progress = Math.min(1, (now - startedAt) / 430);
-          stepNumber.textContent = String(Math.round(goal * (1 - (1 - progress) ** 3))).padStart(2, "0");
-          if (progress < 1) window.requestAnimationFrame(countUp);
-        };
-        window.requestAnimationFrame(countUp);
-      }
-      entry.target.classList.add("is-visible");
-      currentObserver.unobserve(entry.target);
-    });
-  }, { threshold: 0.1, rootMargin: "0px 0px -20px 0px" });
-  targets.forEach((target) => {
-    target.dataset.reveal = "true";
-    const container = target.parentElement;
-    const index = staggerCounters.get(container) || 0;
-    staggerCounters.set(container, index + 1);
-    target.style.transitionDelay = `${(index % 5) * 75}ms`;
-    observer.observe(target);
+function revealTargets(root = document) {
+  if (!motionPreference.matches && "IntersectionObserver" in window) {
+    if (!revealObserver) {
+      revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          animateReadings(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -28px 0px" });
+    }
+  }
+
+  const stagger = new Map();
+  root.querySelectorAll(revealSelector).forEach((target) => {
+    if (target.dataset.revealBound) return;
+    target.dataset.revealBound = "true";
+    target.dataset.reveal = "pressure";
+    const parent = target.parentElement;
+    const index = stagger.get(parent) || 0;
+    stagger.set(parent, index + 1);
+    target.style.setProperty("--reveal-delay", `${(index % 5) * 75}ms`);
+    if (motionPreference.matches || !revealObserver) {
+      target.classList.add("is-visible");
+      animateReadings(target);
+    } else {
+      revealObserver.observe(target);
+    }
   });
-} else {
-  document.querySelectorAll(".section").forEach((section) => {
-    const heading = section.querySelector(".section-heading h2");
-    if (heading?.textContent.includes("Сначала задача") || section.querySelector(".contact-band")) section.classList.add("is-contrast");
+}
+
+function animateReadings(root) {
+  const stepNumber = root.querySelector(".step-num");
+  if (stepNumber && !stepNumber.dataset.counted) {
+    stepNumber.dataset.counted = "true";
+    const goal = Number(stepNumber.textContent) || 0;
+    const startedAt = performance.now();
+    const countUp = (now) => {
+      const progress = Math.min(1, (now - startedAt) / 430);
+      stepNumber.textContent = String(Math.round(goal * (1 - (1 - progress) ** 3))).padStart(2, "0");
+      if (progress < 1) window.requestAnimationFrame(countUp);
+    };
+    window.requestAnimationFrame(countUp);
+  }
+  root.querySelectorAll(".mini-specs strong").forEach((reading) => {
+    if (reading.dataset.counted) return;
+    const match = reading.textContent.match(/^([\d ]+)(.*)$/);
+    if (!match) return;
+    const goal = Number(match[1].replace(/\s/g, ""));
+    if (!goal || goal > 250000) return;
+    reading.dataset.counted = "true";
+    const suffix = match[2];
+    const startedAt = performance.now();
+    const countUp = (now) => {
+      const progress = Math.min(1, (now - startedAt) / 560);
+      reading.textContent = `${money.format(Math.round(goal * (1 - (1 - progress) ** 3)))}${suffix}`;
+      if (progress < 1) window.requestAnimationFrame(countUp);
+    };
+    window.requestAnimationFrame(countUp);
+  });
+}
+
+document.querySelectorAll(".section").forEach((section) => {
+  const heading = section.querySelector(".section-heading h2");
+  if (heading?.textContent.includes("Сначала задача")) section.classList.add("is-contrast");
+});
+revealTargets(document);
+
+const supportsFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+if (supportsFinePointer && !motionPreference.matches) {
+  const cursor = document.createElement("div");
+  cursor.className = "nord-cursor";
+  cursor.setAttribute("aria-hidden", "true");
+  cursor.innerHTML = "<span>↗</span>";
+  document.body.append(cursor);
+  let cursorX = -40;
+  let cursorY = -40;
+  let pointerX = -40;
+  let pointerY = -40;
+  let cursorFrame = 0;
+  const moveCursor = () => {
+    cursorX += (pointerX - cursorX) * 0.15;
+    cursorY += (pointerY - cursorY) * 0.15;
+    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
+    if (Math.abs(pointerX - cursorX) + Math.abs(pointerY - cursorY) > 0.2) cursorFrame = requestAnimationFrame(moveCursor);
+    else cursorFrame = 0;
+  };
+  document.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse") return;
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    cursor.classList.add("is-visible");
+    if (!cursorFrame) cursorFrame = requestAnimationFrame(moveCursor);
+  }, { passive: true });
+  document.addEventListener("pointerover", (event) => {
+    cursor.classList.toggle("is-active", Boolean(event.target.closest("a, button, summary, input, textarea, select, .product-card")));
+    cursor.classList.toggle("is-plus", Boolean(event.target.closest("[data-add-cart], .icon-button")));
+  });
+  document.addEventListener("pointerout", (event) => {
+    if (!event.relatedTarget) cursor.classList.remove("is-visible", "is-active", "is-plus");
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      cancelAnimationFrame(cursorFrame);
+      cursorFrame = 0;
+      cursor.classList.remove("is-visible");
+    }
   });
 }
 
 document.addEventListener("pointermove", (event) => {
-  if (event.pointerType !== "mouse") return;
-  const card = event.target.closest(".product-card");
-  if (!card) return;
-  const bounds = card.getBoundingClientRect();
-  card.style.setProperty("--cursor-x", `${event.clientX - bounds.left}px`);
-  card.style.setProperty("--cursor-y", `${event.clientY - bounds.top}px`);
+  if (event.pointerType !== "mouse" || motionPreference.matches) return;
+  const gallery = event.target.closest(".gallery-main");
+  if (!gallery) return;
+  const image = gallery.querySelector("img");
+  const bounds = gallery.getBoundingClientRect();
+  const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+  const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+  image.style.transform = `perspective(900px) rotateY(${x * 12}deg) rotateX(${y * -12}deg) scale(1.025)`;
 }, { passive: true });
+document.addEventListener("pointerout", (event) => {
+  const gallery = event.target.closest(".gallery-main");
+  if (gallery && !gallery.contains(event.relatedTarget)) gallery.querySelector("img").style.transform = "";
+});
+
+const intro = document.createElement("div");
+intro.className = "nord-intro";
+intro.setAttribute("aria-hidden", "true");
+intro.innerHTML = `<span class="intro-logo"><i></i><b>N</b></span><span class="intro-readout">PRESSURE / FLOW / PRECISION</span>`;
+document.body.append(intro);
+window.setTimeout(() => {
+  intro.classList.add("is-done");
+  window.setTimeout(() => intro.remove(), motionPreference.matches ? 40 : 420);
+}, motionPreference.matches ? 80 : 470);
