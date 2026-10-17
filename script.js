@@ -37,7 +37,7 @@ const products = [
 ];
 const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 let revealObserver;
-const revealSelector = ".page-hero, .section-heading, .category-card, .category-tile, .product-card, .step-card, .article-card, .benefit, .info-card, .rent-card, .fact, .summary-card, .empty-state, .form-card, .login-card, .contact-band";
+const revealSelector = ".page-hero, .gallery-main, .section-heading, .category-card, .category-tile, .product-card, .step-card, .article-card, .benefit, .info-card, .rent-card, .fact, .summary-card, .empty-state, .form-card, .login-card, .contact-band";
 
 const categories = [
   { id: "painting", name: "Окрасочное оборудование", description: "Аппараты для безвоздушного нанесения красок и покрытий.", icon: "01", children: [["Аппараты до 6 л/мин", "category.html?category=painting&flow=compact"], ["Аппараты от 10 л/мин", "category.html?category=painting&flow=high"], ["Модели с QuickReel", "category.html?category=painting&feature=quickreel"]] },
@@ -121,8 +121,55 @@ function breadcrumbs(current) {
   return `<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="index.html">Главная</a><span aria-hidden="true">/</span>${current}</nav>`;
 }
 
-function pageHero(title, lead, crumb) {
-  return `<section class="page-hero"><div class="page-hero-particles" aria-hidden="true"><i></i><i></i><i></i></div><div class="container">${breadcrumbs(crumb)}<p class="eyebrow">NORD / ДАВЛЕНИЕ · ПОТОК · ТОЧНОСТЬ</p><h1>${title}</h1><p class="lead">${lead}</p><div class="hero-pressure-scale" aria-hidden="true"><span>0</span><i></i><span>MAX</span></div></div></section>`;
+function paintParticles() {
+  return `<div class="hero-theme hero-theme--paint" aria-hidden="true">${Array.from({ length: 20 }, (_, index) => {
+    const x = (index * 47 + 13) % 100;
+    const delay = -((index * 7) % 23);
+    const duration = 16 + ((index * 11) % 11);
+    const drift = ((index * 31) % 61) - 30;
+    const color = ["#83aef5", "#c7d9f5", "#5488d7", "#a9bdd9"][index % 4];
+    return `<span class="paint-particle" style="--particle-x:${x}%;--particle-delay:${delay}s;--particle-duration:${duration}s;--particle-drift:${drift}px;--particle-color:${color}"><i></i></span>`;
+  }).join("")}</div>`;
+}
+
+function pageTheme(theme) {
+  if (theme === "corporate") {
+    return `<svg class="page-theme page-theme--dots" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${Array.from({ length: 18 }, (_, index) => `<circle cx="${(index * 97 + 41) % 1380 + 30}" cy="${(index * 53 + 31) % 360 + 24}" r="${index % 3 === 0 ? 2.4 : 1.5}" style="--dot-delay:${-index * 0.7}s;--dot-shift:${12 + index % 18}px"/>`).join("")}</svg>`;
+  }
+  if (theme === "spray") {
+    return `<svg class="page-theme page-theme--spray" viewBox="0 0 1440 420" preserveAspectRatio="none" aria-hidden="true"><g>${[0, 1, 2, 3, 4, 5, 6].map((line) => `<path style="--spray-delay:${line * -.8}s" d="M35 ${210 + line * 11} Q440 ${120 + line * 18} 1435 ${24 + line * 54}"/>`).join("")}</g><circle class="spray-nozzle" cx="35" cy="265" r="5"/></svg>`;
+  }
+  if (theme === "putty") {
+    return `<svg class="page-theme page-theme--putty" viewBox="0 0 1440 420" preserveAspectRatio="none" aria-hidden="true"><path d="M-40 105 Q280 44 600 103 T1480 86"/><path d="M-40 221 Q300 155 640 223 T1480 205"/><path d="M-40 344 Q310 278 670 347 T1480 320"/></svg>`;
+  }
+  if (theme === "rent") {
+    return `<svg class="page-theme page-theme--hose" viewBox="0 0 520 420" aria-hidden="true"><path class="hose-line" pathLength="100" d="M-36 355 C110 360 190 352 218 310 C247 266 191 235 203 172 C216 103 321 81 374 130 C429 181 398 260 344 269 C302 276 277 244 285 211 C292 178 326 166 349 182 C371 197 365 224 347 232"/></svg>`;
+  }
+  if (theme === "fire") {
+    return `<svg class="page-theme page-theme--rings" viewBox="0 0 520 420" aria-hidden="true"><circle cx="260" cy="210" r="40"/><circle cx="260" cy="210" r="40"/><circle cx="260" cy="210" r="40"/></svg>`;
+  }
+  if (theme === "nozzle") {
+    return `<svg class="nozzle-diagram" viewBox="0 0 300 300" aria-hidden="true"><path class="nozzle-body" d="M48 151h82l22-18 26 4 13 14-13 14-26 4-22-18H48l-12 12v-24z"/><path class="nozzle-fan" d="M190 151 286 77M190 151h103M190 151l96 76"/><path class="nozzle-fan nozzle-fan--thin" d="M190 151 270 99M190 151h85M190 151l80 52"/></svg>`;
+  }
+  return "";
+}
+
+function pageHero(title, lead, crumb, theme = "blueprint") {
+  return `<section class="page-hero page-hero--${theme}"><div class="page-hero-particles" aria-hidden="true"><i></i><i></i><i></i></div>${pageTheme(theme)}<div class="container">${breadcrumbs(crumb)}<p class="eyebrow">NORD / ДАВЛЕНИЕ · ПОТОК · ТОЧНОСТЬ</p><h1>${title}</h1><p class="lead">${lead}</p><div class="hero-pressure-scale" aria-hidden="true"><span>0</span><i></i><span>MAX</span></div></div></section>`;
+}
+
+function comparisonSlider({ id, compact = false, caption = "Идеальный результат начинается с точного подбора техники." } = {}) {
+  // TODO: Replace the illustrated before/after scenes with matching real job-site photos from the customer.
+  return `<section class="comparison-section ${compact ? "comparison-section--compact" : ""}">
+    ${compact ? "" : `<div class="comparison-heading"><p class="eyebrow">Результат точной подачи</p><h2>Идеальный результат</h2><p>${caption}</p></div>`}
+    <div class="comparison-slider ${compact ? "comparison-slider--compact" : ""}" data-comparison tabindex="0" role="slider" aria-label="Сравнение результата до и после работы" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" style="--split:50%">
+      <div class="comparison-art comparison-art--before" aria-hidden="true"><svg viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="wall-before-${id}" x2="0" y2="1"><stop stop-color="#e3e8ee"/><stop offset="1" stop-color="#c7d0dc"/></linearGradient><pattern id="grain-before-${id}" width="42" height="38" patternUnits="userSpaceOnUse"><path d="M-4 12 Q5 7 12 13t16 0 21 1M-6 29q9-5 18 0t18 0 17 1" fill="none" stroke="#64748b" stroke-opacity=".34" stroke-width="2"/><circle cx="10" cy="23" r="1.5" fill="#8793a2" fill-opacity=".5"/><circle cx="31" cy="6" r="1.2" fill="#8793a2" fill-opacity=".46"/></pattern></defs><rect width="960" height="480" fill="#e9edf2"/><path d="M0 0h960v387H0z" fill="url(#wall-before-${id})"/><path d="M0 0h960v387H0z" fill="url(#grain-before-${id})" opacity=".7"/><path d="M0 336q105-26 192 0t175-9q115-41 213-9t189-15q91-28 191-8v92H0z" fill="#dbe1e9"/><path d="M0 339q105-27 192 0t175-10q115-40 213-8t189-15q91-29 191-8" fill="none" stroke="#8c99aa" stroke-width="4" stroke-dasharray="9 7" opacity=".65"/><path d="M0 387h960v93H0z" fill="#acb8c7"/><path d="M0 405h960" stroke="#8d9aad" stroke-width="3" opacity=".5"/></svg></div>
+      <div class="comparison-art comparison-art--after" aria-hidden="true"><svg viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="wall-after-${id}" x2="0" y2="1"><stop stop-color="#fafdff"/><stop offset="1" stop-color="#dbe7f5"/></linearGradient><linearGradient id="light-after-${id}" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".74"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="960" height="480" fill="#eaf0f7"/><path d="M0 0h960v387H0z" fill="url(#wall-after-${id})"/><path d="M0 0h960v387H0z" fill="url(#light-after-${id})"/><path d="M0 387h960v93H0z" fill="#c6d5e8"/><path d="M0 387h960" stroke="#9db1cb" stroke-width="3"/><path d="M78 54v272m804-272v272" stroke="#ffffff" stroke-opacity=".65" stroke-width="2"/></svg></div>
+      <span class="comparison-label comparison-label--before">До</span><span class="comparison-label comparison-label--after">С оборудованием NORD</span>
+      <span class="comparison-divider" aria-hidden="true"><span>↔</span></span>
+    </div>
+    ${compact ? "" : `<p class="comparison-caption">Сравните фактуру поверхности — плавно передвиньте разделитель.</p>`}
+  </section>`;
 }
 
 function contactBand(title = "Нужна помощь с подбором?", text = "Расскажите о задаче — поможем выбрать подходящее оборудование.") {
@@ -136,7 +183,8 @@ function renderHome() {
       <div class="hero-points"><span>Продажа и аренда</span><span>Подбор под задачу</span><span>Москва и доставка</span></div>
     </div>
     <div class="hero-visual"><span class="hero-podium" aria-hidden="true"></span><img src="${productImage(products[1], 1)}" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp hero-chip hero-chip-model"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div><div class="hero-stamp hero-chip hero-chip-flow"><strong>11 л/мин</strong><span>Подача материала</span></div><div class="hero-stamp hero-chip hero-chip-pressure"><strong>230 бар</strong><span>Рабочее давление</span></div><div class="hero-flow-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
-  </div></section>
+  </div>${paintParticles()}</section>
+  <section class="section section-soft comparison-wrap">${comparisonSlider({ id: "home", caption: "Ровная подача материала помогает получить аккуратное покрытие на объекте." })}</section>
   <section class="section"><div class="container"><div class="benefit-strip"><div class="benefit"><span class="benefit-icon">↗</span><div><strong>Подбор техники</strong><span>С учётом задачи и материала</span></div></div><div class="benefit"><span class="benefit-icon">▣</span><div><strong>Продажа и аренда</strong><span>Варианты под ваш срок и объём</span></div></div><div class="benefit"><span class="benefit-icon">⌁</span><div><strong>Комплектующие</strong><span>Оснащение для рабочего процесса</span></div></div><div class="benefit"><span class="benefit-icon">⌖</span><div><strong>Москва</strong><span>Самовывоз и доставка</span></div></div></div></div></section>
   <section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Каталог NORD</p><h2>Оборудование<br>под ваши задачи</h2></div><p>Выберите направление — или расскажите, что предстоит сделать, и мы поможем сориентироваться.</p></div><div class="category-grid">${categories.map((item) => `<a class="category-card" href="category.html?category=${item.id}"><span class="category-number">${item.icon} / НАПРАВЛЕНИЕ</span><div><h3>${item.name}</h3><p>${item.description}</p></div><span class="category-arrow" aria-hidden="true">↗</span></a>`).join("")}</div></div></section>
   <section class="section"><div class="container"><div class="section-heading"><div><p class="eyebrow">Выбор Nord</p><h2>Популярное оборудование</h2></div><a class="button button-outline" href="catalog.html">Весь каталог →</a></div><div class="product-grid">${products.map(productCard).join("")}</div></div></section>
@@ -152,7 +200,7 @@ function articleCard(item) {
 }
 
 function renderCatalog() {
-  return `${pageHero("Каталог оборудования", "Окрасочная техника, решения для шпаклёвки и огнезащиты, комплектующие и расходные материалы.", "Каталог")}
+  return `${pageHero("Каталог оборудования", "Окрасочная техника, решения для шпаклёвки и огнезащиты, комплектующие и расходные материалы.", "Каталог", "spray")}
   <section class="section"><div class="container"><div class="category-tiles">${categories.map((item) => `<div class="category-tile"><a href="category.html?category=${item.id}"><strong>${item.name}</strong><span>${item.description}</span></a><div class="category-subcats">${item.children.map(([name, href]) => `<a href="${href}">${name} ↗</a>`).join("")}</div></div>`).join("")}</div><div class="section-heading"><div><p class="eyebrow">Окрасочное оборудование</p><h2>Аппараты в каталоге</h2></div><p>Смотрите характеристики, фотографии и варианты комплектации в карточке каждой модели.</p></div><div class="product-grid">${products.map(productCard).join("")}</div><div style="margin-top:36px">${contactBand()}</div></div></section>`;
 }
 
@@ -170,9 +218,10 @@ function renderCategory() {
     : selectedCategory.id === "putty" || selectedCategory.id === "fire"
       ? products.filter((item) => item.id === "putter-9528x")
       : [];
+  const sectionTheme = selectedCategory.id === "painting" ? "spray" : selectedCategory.id === "putty" ? "putty" : selectedCategory.id === "fire" ? "fire" : "blueprint";
   const materialPreset = selectedCategory.id === "fire" ? "fire" : selectedCategory.id === "putty" ? "putty" : "";
-  return `${pageHero(selectedSubcategory || selectedCategory.name, selectedCategory.description, selectedCategory.name)}
-  <section class="section"><div class="container">
+  return `${pageHero(selectedSubcategory || selectedCategory.name, selectedCategory.description, selectedCategory.name, sectionTheme)}
+  <section class="section category-section category-section--${sectionTheme}">${pageTheme(sectionTheme)}<div class="container">
     ${!available.length ? `<div class="empty-state"><h2>Подбор оборудования</h2><p>Расскажите, какой материал и объём работ планируются. Поможем подобрать подходящее решение и уточним наличие.</p><a class="button button-primary" href="contacts.html">Запросить подбор</a></div>` : `
       <div class="catalog-layout">
         <aside class="filter-panel" aria-label="Фильтры каталога"><h3>Фильтры</h3>
@@ -191,10 +240,10 @@ function renderCategory() {
 function renderProduct() {
   const product = products.find((item) => item.id === new URLSearchParams(location.search).get("id")) || products[0];
   const saved = favorites.includes(product.id);
-  return `${pageHero(product.name, product.description, product.shortName)}
+  return `${pageHero(product.name, product.description, product.shortName, "nozzle")}
   <section class="section"><div class="container"><div class="product-layout">
-    <div><div class="gallery-main"><img data-gallery-main src="${productImage(product)}" alt="${product.images[0][1]}"></div><div class="gallery-thumbs" role="group" aria-label="Фотографии ${product.shortName}">${product.images.map(([file, alt], index) => `<button class="gallery-thumb" type="button" data-gallery-src="${asset(product, file)}" data-gallery-alt="${alt}" aria-label="Фото ${index + 1}: ${alt}" aria-pressed="${index === 0}"><img src="${asset(product, file)}" alt="" loading="lazy"></button>`).join("")}</div></div>
-    <div class="product-detail-copy"><span class="badge">${product.badge}</span><h1>${product.name}</h1><p>${product.description}</p><div class="detail-price">${money.format(product.price)} ₽${product.oldPrice ? `<del>${money.format(product.oldPrice)} ₽</del>` : ""}</div><div class="detail-actions"><button class="button button-primary" type="button" data-add-cart="${product.id}">Добавить в корзину</button><button class="icon-button ${saved ? "is-active" : ""}" type="button" data-favorite="${product.id}" aria-label="${saved ? "Убрать из избранного" : "В избранное"}" aria-pressed="${saved}">♡</button></div><table class="spec-table"><tbody>${product.specs.map(([name, value]) => `<tr><th scope="row">${name}</th><td>${value}</td></tr>`).join("")}</tbody></table>    <div class="detail-section"><h3>Для каких материалов</h3><p>${product.materials}</p></div>${product.id === "putter-9528x" ? '<div class="detail-section"><h3>Гарантия</h3><p>2 года гарантии от магазина.</p></div>' : ""}<div class="detail-section"><h3>Комплектация</h3><p>Состав комплекта зависит от выбранной комплектации. Уточните его при заказе оборудования.</p></div></div>
+    <div><div class="gallery-main">${pageTheme("nozzle")}<img data-gallery-main src="${productImage(product)}" alt="${product.images[0][1]}"></div><div class="gallery-thumbs" role="group" aria-label="Фотографии ${product.shortName}">${product.images.map(([file, alt], index) => `<button class="gallery-thumb" type="button" data-gallery-src="${asset(product, file)}" data-gallery-alt="${alt}" aria-label="Фото ${index + 1}: ${alt}" aria-pressed="${index === 0}"><img src="${asset(product, file)}" alt="" loading="lazy"></button>`).join("")}</div></div>
+    <div class="product-detail-copy"><span class="badge">${product.badge}</span><h1>${product.name}</h1><p>${product.description}</p><div class="detail-price">${money.format(product.price)} ₽${product.oldPrice ? `<del>${money.format(product.oldPrice)} ₽</del>` : ""}</div><div class="detail-actions"><button class="button button-primary" type="button" data-add-cart="${product.id}">Добавить в корзину</button><button class="icon-button ${saved ? "is-active" : ""}" type="button" data-favorite="${product.id}" aria-label="${saved ? "Убрать из избранного" : "В избранное"}" aria-pressed="${saved}">♡</button></div><table class="spec-table"><tbody>${product.specs.map(([name, value]) => `<tr><th scope="row">${name}</th><td>${value}</td></tr>`).join("")}</tbody></table>    <div class="detail-section"><h3>Для каких материалов</h3><p>${product.materials}</p></div>${product.id === "putter-9528x" ? '<div class="detail-section"><h3>Гарантия</h3><p>2 года гарантии от магазина.</p></div>' : ""}<div class="detail-section"><h3>Комплектация</h3><p>Состав комплекта зависит от выбранной комплектации. Уточните его при заказе оборудования.</p></div><div class="detail-section product-result"><h3>Результат работы аппаратом ${product.shortName}</h3>${comparisonSlider({ id: product.id, compact: true })}</div></div>
   </div><section class="section"><div class="section-heading"><div><p class="eyebrow">Другие модели</p><h2>Похожие товары</h2></div></div><div class="product-grid">${products.filter((item) => item.id !== product.id).map(productCard).join("")}</div></section></div></section>`;
 }
 
@@ -221,17 +270,17 @@ function renderRent() {
     ["Шпаклёвочные работы", "Шнековая станция + компрессор", [["1–2 дня", "2 000 ₽ / сутки"], ["От 2 дней", "1 500 ₽ / сутки"]]],
     ["Огнезащитные материалы", "Аппарат для огнезащиты", [["Стоимость", "Уточните при обращении"]]],
   ];
-  return `${pageHero("Аренда оборудования", "Окрасочные аппараты, шпаклёвочные станции и техника для огнезащиты в Москве.", "Аренда")}
+  return `${pageHero("Аренда оборудования", "Окрасочные аппараты, шпаклёвочные станции и техника для огнезащиты в Москве.", "Аренда", "rent")}
   <section class="section"><div class="container"><div class="rent-grid">${rates.map(([tag, name, lines]) => `<article class="rent-card"><p class="eyebrow">${tag}</p><h3>${name}</h3>${lines.map(([period, price]) => `<div class="rent-price-line"><span>${period}</span><strong>${price}</strong></div>`).join("")}</article>`).join("")}</div><div class="info-grid" style="margin-top:16px"><article class="info-card"><p class="eyebrow">Срок аренды</p><h3>Краткосрочно и надолго</h3><p>Доступна долгосрочная аренда. Условия согласуются индивидуально.</p></article><article class="info-card"><p class="eyebrow">Для бизнеса</p><h3>Компании и ИП</h3><p>Работа с юридическими лицами и индивидуальными предпринимателями.</p></article><article class="info-card"><p class="eyebrow">Получение техники</p><h3>Доставка или самовывоз</h3><p>Доставка доступна по согласованию с Nord.</p></article></div><div class="section" style="padding-bottom:0"><div class="section-heading"><div><p class="eyebrow">Самовывоз и доставка</p><h2>Точка выдачи в Москве</h2></div></div><div class="address-card"><h3>Окружной проезд, 34Ас6</h3><p>Соколиная гора · 6–10 мин<br>Шоссе Энтузиастов · 11–15 мин<br>Сортировочная · 21–30 мин</p><a href="https://yandex.ru/maps/?text=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D0%9E%D0%BA%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D0%B9%20%D0%BF%D1%80%D0%BE%D0%B5%D0%B7%D0%B4%2C%2034%D0%90%D1%816" target="_blank" rel="noreferrer">Показать на карте ↗</a></div></div><div style="margin-top:30px">${contactBand("Уточнить аренду", "Согласуем доступность техники, срок, комплектацию и доставку.")}</div></div></section>`;
 }
 
 function renderAbout() {
-  return `${pageHero("О компании Nord", "Профессиональное оборудование для малярных и отделочных работ.", "О компании")}
+  return `${pageHero("О компании Nord", "Профессиональное оборудование для малярных и отделочных работ.", "О компании", "corporate")}
   <section class="section"><div class="container split-panel"><div><p class="eyebrow">Nord · оборудование для дела</p><h2>Техника, которая помогает работать.</h2><p class="lead">Nord предлагает оборудование для окраски, шпаклёвочных и огнезащитных работ. Можно выбрать аппарат для покупки или подобрать технику в аренду.</p><p class="lead">Помогаем разобраться в характеристиках, комплектации и соответствии оборудования рабочей задаче.</p></div><div class="about-facts"><div class="fact"><strong>Продажа</strong><span>Окрасочные аппараты</span></div><div class="fact"><strong>Аренда</strong><span>От краткого срока до долгосрочной</span></div><div class="fact"><strong>Подбор</strong><span>Под материал и объект</span></div><div class="fact"><strong>Москва</strong><span>Точка выдачи оборудования</span></div></div></div></section><section class="section section-soft"><div class="container"><div class="section-heading"><div><p class="eyebrow">Наш подход</p><h2>Понятный выбор техники</h2></div></div><div class="steps-grid"><article class="step-card"><span class="step-num">01</span><h3>Уточняем условия</h3><p>Какой материал предстоит наносить, где и в каком объёме?</p></article><article class="step-card"><span class="step-num">02</span><h3>Подбираем вариант</h3><p>Обсуждаем характеристики, оснащение и формат — покупка или аренда.</p></article><article class="step-card"><span class="step-num">03</span><h3>Согласуем детали</h3><p>Подтверждаем наличие, комплект и условия до заказа или бронирования.</p></article></div></div></section>`;
 }
 
 function renderContacts() {
-  return `${pageHero("Контакты Nord", "Обсудите задачу по телефону при обращении или оставьте описание для подготовки.", "Контакты")}
+  return `${pageHero("Контакты Nord", "Обсудите задачу по телефону при обращении или оставьте описание для подготовки.", "Контакты", "corporate")}
   <section class="section"><div class="container form-layout"><div><p class="eyebrow">Москва · точка выдачи</p><h2>Окружной проезд,<br>34Ас6</h2><p class="lead">Соколиная гора — 6–10 минут<br>Шоссе Энтузиастов — 11–15 минут<br>Сортировочная — 21–30 минут</p><a class="button button-outline" href="https://yandex.ru/maps/?text=%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0%2C%20%D0%9E%D0%BA%D1%80%D1%83%D0%B6%D0%BD%D0%BE%D0%B9%20%D0%BF%D1%80%D0%BE%D0%B5%D0%B7%D0%B4%2C%2034%D0%90%D1%816" target="_blank" rel="noreferrer">Открыть карту ↗</a></div><div class="form-card"><h2>Напишите нам</h2><p class="form-note">Опишите задачу и оставьте контакт — подготовим текст обращения, который можно отправить менеджеру.</p><form data-contact-form><div class="form-grid"><div class="form-field"><label for="contact-name">Ваше имя</label><input class="form-control" id="contact-name" name="name" autocomplete="name" required minlength="2"></div><div class="form-field"><label for="contact-phone">Телефон или другой контакт</label><input class="form-control" id="contact-phone" name="phone" autocomplete="tel" required></div><div class="form-field form-field-wide"><label for="contact-message">Что нужно подобрать?</label><textarea class="form-control" id="contact-message" name="message" required minlength="10"></textarea></div></div><button class="button button-primary" type="submit">Подготовить обращение</button><p class="form-status" data-contact-status aria-live="polite"></p><div class="copy-draft" data-copy-draft><textarea class="form-control" data-draft-text aria-label="Текст обращения"></textarea><button class="button button-outline" type="button" data-copy-text>Скопировать текст</button></div></form></div></div></section>`;
 }
 
@@ -595,6 +644,86 @@ function revealTargets(root = document) {
     }
   });
 }
+
+function updateComparisonSlider(slider, value) {
+  const position = Math.round(Math.min(100, Math.max(0, value)));
+  slider.style.setProperty("--split", `${position}%`);
+  slider.setAttribute("aria-valuenow", String(position));
+  slider.setAttribute("aria-valuetext", `До ${position} процентов, с оборудованием NORD ${100 - position} процентов`);
+}
+
+const comparisonDrags = new Map();
+document.addEventListener("pointerover", (event) => {
+  const slider = event.target.closest("[data-comparison]");
+  if (!slider || event.pointerType !== "mouse" || slider.dataset.previewed || slider.dataset.interacted || motionPreference.matches) return;
+  if (event.relatedTarget && slider.contains(event.relatedTarget)) return;
+  slider.dataset.previewed = "true";
+  slider.classList.add("is-previewing");
+  const startedAt = performance.now();
+  const duration = 3900;
+  const movePreview = (now) => {
+    if (!slider.isConnected || slider.dataset.interacted) {
+      slider.classList.remove("is-previewing");
+      return;
+    }
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const segment = progress < 1 / 3
+      ? [50, 25, progress * 3]
+      : progress < 2 / 3
+        ? [25, 75, (progress - 1 / 3) * 3]
+        : [75, 50, (progress - 2 / 3) * 3];
+    const eased = (1 - Math.cos(segment[2] * Math.PI)) / 2;
+    updateComparisonSlider(slider, segment[0] + (segment[1] - segment[0]) * eased);
+    if (progress < 1) slider._comparisonPreview = requestAnimationFrame(movePreview);
+    else slider.classList.remove("is-previewing");
+  };
+  slider._comparisonPreview = requestAnimationFrame(movePreview);
+});
+
+document.addEventListener("pointerdown", (event) => {
+  const slider = event.target.closest("[data-comparison]");
+  if (!slider || event.button !== 0) return;
+  slider.dataset.interacted = "true";
+  slider.classList.add("is-dragging");
+  cancelAnimationFrame(slider._comparisonPreview);
+  slider.focus({ preventScroll: true });
+  slider.setPointerCapture(event.pointerId);
+  comparisonDrags.set(event.pointerId, slider);
+  const bounds = slider.getBoundingClientRect();
+  if (bounds.width) updateComparisonSlider(slider, (event.clientX - bounds.left) / bounds.width * 100);
+  event.preventDefault();
+});
+
+document.addEventListener("pointermove", (event) => {
+  const slider = comparisonDrags.get(event.pointerId);
+  if (!slider) return;
+  const bounds = slider.getBoundingClientRect();
+  if (bounds.width) updateComparisonSlider(slider, (event.clientX - bounds.left) / bounds.width * 100);
+});
+
+function finishComparisonDrag(event) {
+  const slider = comparisonDrags.get(event.pointerId);
+  if (!slider) return;
+  comparisonDrags.delete(event.pointerId);
+  slider.classList.remove("is-dragging");
+  if (slider.hasPointerCapture(event.pointerId)) slider.releasePointerCapture(event.pointerId);
+}
+
+document.addEventListener("pointerup", finishComparisonDrag);
+document.addEventListener("pointercancel", finishComparisonDrag);
+document.addEventListener("keydown", (event) => {
+  const slider = event.target.closest("[data-comparison]");
+  if (!slider) return;
+  const current = Number(slider.getAttribute("aria-valuenow")) || 50;
+  const increment = event.shiftKey ? 10 : 2;
+  if (event.key === "ArrowLeft" || event.key === "ArrowDown") updateComparisonSlider(slider, current - increment);
+  else if (event.key === "ArrowRight" || event.key === "ArrowUp") updateComparisonSlider(slider, current + increment);
+  else if (event.key === "Home") updateComparisonSlider(slider, 0);
+  else if (event.key === "End") updateComparisonSlider(slider, 100);
+  else return;
+  slider.dataset.interacted = "true";
+  event.preventDefault();
+});
 
 function animateReadings(root) {
   const stepNumber = root.querySelector(".step-num");
