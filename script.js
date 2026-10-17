@@ -290,8 +290,18 @@ function renderPage() {
 }
 
 function updateCounts() {
-  document.querySelectorAll("[data-cart-count]").forEach((el) => { el.textContent = Object.values(cart).reduce((sum, value) => sum + value, 0); });
+  const cartCount = Object.values(cart).reduce((sum, value) => sum + value, 0);
+  if (updateCounts.lastCartCount === undefined) updateCounts.lastCartCount = cartCount;
+  document.querySelectorAll("[data-cart-count]").forEach((el) => {
+    el.textContent = cartCount;
+    if (cartCount !== updateCounts.lastCartCount) {
+      el.classList.remove("is-pulsing");
+      void el.offsetWidth;
+      el.classList.add("is-pulsing");
+    }
+  });
   document.querySelectorAll("[data-favorites-count]").forEach((el) => { el.textContent = favorites.length; });
+  updateCounts.lastCartCount = cartCount;
 }
 
 function showToast(message) {
@@ -323,6 +333,14 @@ document.addEventListener("click", (event) => {
     cart[id] = (cart[id] || 0) + 1;
     setStored("nord-v2-cart", cart);
     updateCounts();
+    const originalLabel = target.textContent;
+    target.textContent = "✓ Добавлено";
+    target.classList.add("is-added");
+    window.setTimeout(() => {
+      if (!target.isConnected) return;
+      target.textContent = originalLabel;
+      target.classList.remove("is-added");
+    }, 950);
     showToast("Товар добавлен в корзину");
   }
   if (target.matches("[data-favorite]")) {
@@ -438,18 +456,104 @@ updateCounts();
 if (document.body.dataset.page === "category") filterProducts();
 
 const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+const siteHeader = document.querySelector(".site-header");
+let scrollFrame = 0;
+let latestScrollY = window.scrollY;
+const progress = document.createElement("div");
+progress.className = "page-progress";
+progress.setAttribute("role", "progressbar");
+progress.setAttribute("aria-label", "Прокрутка страницы");
+progress.setAttribute("aria-valuemin", "0");
+progress.setAttribute("aria-valuemax", "100");
+progress.setAttribute("aria-valuenow", "0");
+document.body.append(progress);
+document.body.classList.add("page-enter");
+
+function updateScrollEffects() {
+  scrollFrame = 0;
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  const percentage = scrollable > 0 ? Math.min(100, Math.max(0, latestScrollY / scrollable * 100)) : 0;
+  progress.style.transform = `scaleX(${percentage / 100})`;
+  progress.setAttribute("aria-valuenow", String(Math.round(percentage)));
+  siteHeader.classList.toggle("is-compact", latestScrollY > 32);
+
+  const heroImage = document.querySelector(".hero-visual img");
+  if (heroImage && !motionPreference.matches) {
+    const hero = document.querySelector(".hero");
+    const heroBottom = hero.getBoundingClientRect().bottom + latestScrollY;
+    if (latestScrollY < heroBottom) {
+      heroImage.dataset.speed ||= "0.36";
+      const distanceIntoHero = Math.max(0, latestScrollY - hero.offsetTop);
+      const offset = Math.min(48, distanceIntoHero * Number(heroImage.dataset.speed));
+      heroImage.style.translate = `0 ${Math.round(offset)}px`;
+    }
+  }
+}
+
+window.addEventListener("scroll", () => {
+  latestScrollY = window.scrollY;
+  if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollEffects);
+}, { passive: true });
+window.addEventListener("resize", () => {
+  latestScrollY = window.scrollY;
+  if (!scrollFrame) scrollFrame = window.requestAnimationFrame(updateScrollEffects);
+}, { passive: true });
+updateScrollEffects();
+
+const favicon = document.createElement("link");
+favicon.rel = "icon";
+favicon.type = "image/svg+xml";
+favicon.href = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#1E4FA3"/><path d="M13 35V13h5l12 14V13h5v22h-5L18 21v14z" fill="white"/></svg>')}`;
+document.head.append(favicon);
+
 if (!motionPreference.matches && "IntersectionObserver" in window) {
-  const targets = document.querySelectorAll(".section-heading, .category-card, .product-card, .step-card, .article-card, .benefit, .info-card");
+  document.querySelectorAll(".section").forEach((section) => {
+    const heading = section.querySelector(".section-heading h2");
+    if (heading?.textContent.includes("Сначала задача")) section.classList.add("is-contrast");
+    if (section.querySelector(".contact-band")) section.classList.add("is-contrast");
+  });
+
+  const targets = document.querySelectorAll(".section-heading, .category-card, .category-tile, .product-card, .step-card, .article-card, .benefit, .info-card, .rent-card, .about-facts .fact, .contact-band");
+  const staggerCounters = new Map();
   const observer = new IntersectionObserver((entries, currentObserver) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
+      const stepNumber = entry.target.querySelector(".step-num");
+      if (stepNumber && !stepNumber.dataset.counted) {
+        stepNumber.dataset.counted = "true";
+        const goal = Number(stepNumber.textContent) || 0;
+        const startedAt = performance.now();
+        const countUp = (now) => {
+          const progress = Math.min(1, (now - startedAt) / 430);
+          stepNumber.textContent = String(Math.round(goal * (1 - (1 - progress) ** 3))).padStart(2, "0");
+          if (progress < 1) window.requestAnimationFrame(countUp);
+        };
+        window.requestAnimationFrame(countUp);
+      }
       entry.target.classList.add("is-visible");
       currentObserver.unobserve(entry.target);
     });
   }, { threshold: 0.1, rootMargin: "0px 0px -20px 0px" });
-  targets.forEach((target, index) => {
+  targets.forEach((target) => {
     target.dataset.reveal = "true";
-    target.style.transitionDelay = `${(index % 4) * 50}ms`;
+    const container = target.parentElement;
+    const index = staggerCounters.get(container) || 0;
+    staggerCounters.set(container, index + 1);
+    target.style.transitionDelay = `${(index % 5) * 75}ms`;
     observer.observe(target);
   });
+} else {
+  document.querySelectorAll(".section").forEach((section) => {
+    const heading = section.querySelector(".section-heading h2");
+    if (heading?.textContent.includes("Сначала задача") || section.querySelector(".contact-band")) section.classList.add("is-contrast");
+  });
 }
+
+document.addEventListener("pointermove", (event) => {
+  if (event.pointerType !== "mouse") return;
+  const card = event.target.closest(".product-card");
+  if (!card) return;
+  const bounds = card.getBoundingClientRect();
+  card.style.setProperty("--cursor-x", `${event.clientX - bounds.left}px`);
+  card.style.setProperty("--cursor-y", `${event.clientY - bounds.top}px`);
+}, { passive: true });
