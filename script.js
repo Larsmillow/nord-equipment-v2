@@ -769,24 +769,10 @@ if (supportsFinePointer && !motionPreference.matches) {
   cursor.setAttribute("aria-hidden", "true");
   cursor.innerHTML = "<span>↗</span>";
   document.body.append(cursor);
-  let cursorX = -40;
-  let cursorY = -40;
-  let pointerX = -40;
-  let pointerY = -40;
-  let cursorFrame = 0;
-  const moveCursor = () => {
-    cursorX += (pointerX - cursorX) * 0.15;
-    cursorY += (pointerY - cursorY) * 0.15;
-    cursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0) translate(-50%, -50%)`;
-    if (Math.abs(pointerX - cursorX) + Math.abs(pointerY - cursorY) > 0.2) cursorFrame = requestAnimationFrame(moveCursor);
-    else cursorFrame = 0;
-  };
   document.addEventListener("pointermove", (event) => {
     if (event.pointerType !== "mouse") return;
-    pointerX = event.clientX;
-    pointerY = event.clientY;
+    cursor.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
     cursor.classList.add("is-visible");
-    if (!cursorFrame) cursorFrame = requestAnimationFrame(moveCursor);
   }, { passive: true });
   document.addEventListener("pointerover", (event) => {
     cursor.classList.toggle("is-active", Boolean(event.target.closest("a, button, summary, input, textarea, select, .product-card")));
@@ -797,8 +783,6 @@ if (supportsFinePointer && !motionPreference.matches) {
   });
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      cancelAnimationFrame(cursorFrame);
-      cursorFrame = 0;
       cursor.classList.remove("is-visible");
     }
   });
