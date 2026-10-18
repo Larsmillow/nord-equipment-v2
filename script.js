@@ -94,7 +94,7 @@ function renderHeader() {
   const active = (name) => page === name ? ' aria-current="page"' : "";
   document.querySelector("#site-header").innerHTML = `<header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="index.html" aria-label="NORD — главная"><span class="brand-mark" aria-hidden="true">N<i></i></span><span class="brand-copy"><span class="brand-name">NORD</span><span class="brand-caption">оборудование для дела</span></span></a>
+      <a class="brand" href="index.html" aria-label="NORD — главная"><img class="brand-logo" src="assets/products/logo.png" alt="NORD — оборудование для малярных работ"></a>
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Открыть меню"><span></span><span></span></button>
       <nav class="site-nav" id="site-nav" aria-label="Основная навигация">
         <details class="nav-catalog"><summary>Каталог⌄</summary><div class="mega-menu">${categories.map((item) => `<a href="category.html?category=${item.id}">${item.name}</a>`).join("")}<a href="catalog.html">Все категории и товары →</a></div></details>
@@ -108,7 +108,7 @@ function renderHeader() {
 function renderFooter() {
   document.querySelector("#site-footer").innerHTML = `<footer class="site-footer"><span class="footer-watermark" aria-hidden="true">NORD</span><div class="container">
     <div class="footer-grid">
-      <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark">N</span><span class="brand-copy"><span class="brand-name">NORD</span><span class="brand-caption">оборудование для дела</span></span></a><p class="footer-description">Оборудование для малярных и отделочных работ. Продажа и аренда.</p></div>
+      <div class="footer-brand"><a class="brand" href="index.html" aria-label="NORD — главная"><img class="brand-logo" src="assets/products/logo.png" alt="NORD — оборудование для малярных работ"></a><p class="footer-description">Оборудование для малярных и отделочных работ. Продажа и аренда.</p></div>
       <div><div class="footer-title">Каталог</div><div class="footer-links"><a href="catalog.html">Все оборудование</a><a href="category.html?category=painting">Окрасочные аппараты</a><a href="category.html?category=putty">Шпаклёвочные станции</a><a href="category.html?category=accessories">Комплектующие</a></div></div>
       <div><div class="footer-title">Покупателям</div><div class="footer-links"><a href="rent.html">Аренда</a><a href="delivery.html">Доставка</a><a href="warranty.html">Гарантии и сервис</a><a href="account.html">Личный кабинет</a></div></div>
       <div><div class="footer-title">Nord</div><div class="footer-links"><a href="about.html">О компании</a><a href="contacts.html">Контакты</a><a href="blog.html">Статьи и новости</a><a href="favorites.html">Избранное</a></div></div>
@@ -822,7 +822,7 @@ document.addEventListener("pointerout", (event) => {
 const intro = document.createElement("div");
 intro.className = "nord-intro";
 intro.setAttribute("aria-hidden", "true");
-intro.innerHTML = `<span class="intro-logo"><i></i><b>N</b></span><span class="intro-readout">PRESSURE / FLOW / PRECISION</span>`;
+intro.innerHTML = `<img class="intro-logo" src="assets/products/logo.png" alt=""><span class="intro-readout">PRESSURE / FLOW / PRECISION</span>`;
 document.body.append(intro);
 window.setTimeout(() => {
   intro.classList.add("is-done");
