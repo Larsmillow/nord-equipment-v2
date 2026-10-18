@@ -158,13 +158,13 @@ function pageHero(title, lead, crumb, theme = "blueprint") {
   return `<section class="page-hero page-hero--${theme}"><div class="page-hero-particles" aria-hidden="true"><i></i><i></i><i></i></div>${pageTheme(theme)}<div class="container">${breadcrumbs(crumb)}<p class="eyebrow">NORD / ДАВЛЕНИЕ · ПОТОК · ТОЧНОСТЬ</p><h1>${title}</h1><p class="lead">${lead}</p><div class="hero-pressure-scale" aria-hidden="true"><span>0</span><i></i><span>MAX</span></div></div></section>`;
 }
 
-function comparisonSlider({ id, compact = false, caption = "Идеальный результат начинается с точного подбора техники." } = {}) {
+function comparisonSlider({ compact = false, caption = "Идеальный результат начинается с точного подбора техники." } = {}) {
   // TODO: Replace the illustrated before/after scenes with matching real job-site photos from the customer.
   return `<section class="comparison-section ${compact ? "comparison-section--compact" : ""}">
     ${compact ? "" : `<div class="comparison-heading"><p class="eyebrow">Результат точной подачи</p><h2>Идеальный результат</h2><p>${caption}</p></div>`}
     <div class="comparison-slider ${compact ? "comparison-slider--compact" : ""}" data-comparison tabindex="0" role="slider" aria-label="Сравнение результата до и после работы" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" style="--split:50%">
-      <div class="comparison-art comparison-art--before" aria-hidden="true"><svg viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="wall-before-${id}" x2="0" y2="1"><stop stop-color="#e3e8ee"/><stop offset="1" stop-color="#c7d0dc"/></linearGradient><pattern id="grain-before-${id}" width="42" height="38" patternUnits="userSpaceOnUse"><path d="M-4 12 Q5 7 12 13t16 0 21 1M-6 29q9-5 18 0t18 0 17 1" fill="none" stroke="#64748b" stroke-opacity=".34" stroke-width="2"/><circle cx="10" cy="23" r="1.5" fill="#8793a2" fill-opacity=".5"/><circle cx="31" cy="6" r="1.2" fill="#8793a2" fill-opacity=".46"/></pattern></defs><rect width="960" height="480" fill="#e9edf2"/><path d="M0 0h960v387H0z" fill="url(#wall-before-${id})"/><path d="M0 0h960v387H0z" fill="url(#grain-before-${id})" opacity=".7"/><path d="M0 336q105-26 192 0t175-9q115-41 213-9t189-15q91-28 191-8v92H0z" fill="#dbe1e9"/><path d="M0 339q105-27 192 0t175-10q115-40 213-8t189-15q91-29 191-8" fill="none" stroke="#8c99aa" stroke-width="4" stroke-dasharray="9 7" opacity=".65"/><path d="M0 387h960v93H0z" fill="#acb8c7"/><path d="M0 405h960" stroke="#8d9aad" stroke-width="3" opacity=".5"/></svg></div>
-      <div class="comparison-art comparison-art--after" aria-hidden="true"><svg viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="wall-after-${id}" x2="0" y2="1"><stop stop-color="#fafdff"/><stop offset="1" stop-color="#dbe7f5"/></linearGradient><linearGradient id="light-after-${id}" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".74"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="960" height="480" fill="#eaf0f7"/><path d="M0 0h960v387H0z" fill="url(#wall-after-${id})"/><path d="M0 0h960v387H0z" fill="url(#light-after-${id})"/><path d="M0 387h960v93H0z" fill="#c6d5e8"/><path d="M0 387h960" stroke="#9db1cb" stroke-width="3"/><path d="M78 54v272m804-272v272" stroke="#ffffff" stroke-opacity=".65" stroke-width="2"/></svg></div>
+      <div class="comparison-art comparison-art--before" aria-hidden="true"></div>
+      <div class="comparison-art comparison-art--after" aria-hidden="true"></div>
       <span class="comparison-label comparison-label--before">До</span><span class="comparison-label comparison-label--after">С оборудованием NORD</span>
       <span class="comparison-divider" aria-hidden="true"><span>↔</span></span>
     </div>
@@ -182,7 +182,7 @@ function renderHome() {
       <div class="hero-actions"><a class="button button-primary" href="catalog.html">Перейти в каталог <span>→</span></a><a class="button button-outline" href="rent.html">Аренда оборудования</a></div>
       <div class="hero-points"><span>Продажа и аренда</span><span>Подбор под задачу</span><span>Москва и доставка</span></div>
     </div>
-    <div class="hero-visual"><span class="hero-podium" aria-hidden="true"></span><img src="${productImage(products[1], 1)}" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp hero-chip hero-chip-model"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div><div class="hero-stamp hero-chip hero-chip-flow"><strong>11 л/мин</strong><span>Подача материала</span></div><div class="hero-stamp hero-chip hero-chip-pressure"><strong>230 бар</strong><span>Рабочее давление</span></div><div class="hero-flow-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
+    <div class="hero-visual"><span class="hero-podium" aria-hidden="true"></span><img src="${asset(products[1], "putter-9528x-hero-transparent.png")}" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp hero-chip hero-chip-model"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div><div class="hero-stamp hero-chip hero-chip-flow"><strong>11 л/мин</strong><span>Подача материала</span></div><div class="hero-stamp hero-chip hero-chip-pressure"><strong>230 бар</strong><span>Рабочее давление</span></div><div class="hero-flow-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>
   </div>${paintParticles()}</section>
   <section class="section section-soft comparison-wrap">${comparisonSlider({ id: "home", caption: "Ровная подача материала помогает получить аккуратное покрытие на объекте." })}</section>
   <section class="section"><div class="container"><div class="benefit-strip"><div class="benefit"><span class="benefit-icon">↗</span><div><strong>Подбор техники</strong><span>С учётом задачи и материала</span></div></div><div class="benefit"><span class="benefit-icon">▣</span><div><strong>Продажа и аренда</strong><span>Варианты под ваш срок и объём</span></div></div><div class="benefit"><span class="benefit-icon">⌁</span><div><strong>Комплектующие</strong><span>Оснащение для рабочего процесса</span></div></div><div class="benefit"><span class="benefit-icon">⌖</span><div><strong>Москва</strong><span>Самовывоз и доставка</span></div></div></div></div></section>
@@ -345,6 +345,7 @@ function renderPage() {
   }
   main.insertAdjacentHTML("beforeend", `<section class="section is-contrast shared-cta"><div class="container"></div></section>`);
   main.querySelector(".shared-cta .container").append(cta);
+  accentSectionHeadings(main);
   document.title = `${(document.querySelector("#main h1")?.innerText || "NORD").replace(/\s+/g, " ").trim()} — NORD`;
   if (page === "contacts" && new URLSearchParams(location.search).has("order")) {
     const lines = Object.entries(cart)
@@ -361,12 +362,40 @@ function renderPage() {
   revealTargets(main);
 }
 
+function accentSectionHeadings(root) {
+  root.querySelectorAll("h2").forEach((heading) => {
+    if (heading.dataset.accented) return;
+    const walker = document.createTreeWalker(heading, NodeFilter.SHOW_TEXT);
+    let lastText = null;
+    while (walker.nextNode()) {
+      if (walker.currentNode.textContent.trim()) lastText = walker.currentNode;
+    }
+    if (!lastText) return;
+    const match = lastText.textContent.match(/(\S+)(\s*)$/);
+    if (!match) return;
+    const accent = document.createElement("span");
+    accent.className = "heading-accent";
+    accent.textContent = match[1];
+    lastText.replaceData(match.index, match[0].length, "");
+    lastText.parentNode.insertBefore(accent, lastText.nextSibling);
+    heading.dataset.accented = "true";
+  });
+}
+
 function decorateSensors(root) {
-  root.querySelectorAll(".product-card, .category-card, .category-tile, .rent-card, .step-card, .info-card, .article-card, .benefit, .fact, .summary-card, .empty-state, .form-card, .login-card").forEach((card, index) => {
+  root.querySelectorAll(".product-card, .category-card, .category-tile, .rent-card, .step-card, .info-card, .article-card, .benefit, .fact, .summary-card, .empty-state, .form-card, .login-card").forEach((card) => {
     card.classList.add("is-sensor");
-    card.style.setProperty("--sensor-order", index % 5);
-    if (card.querySelector(".sensor-gauge")) return;
-    card.insertAdjacentHTML("afterbegin", `<span class="sensor-gauge" aria-hidden="true"><svg viewBox="0 0 40 40"><circle class="sensor-gauge-track" cx="20" cy="20" r="16"/><circle class="sensor-gauge-value" cx="20" cy="20" r="16"/></svg><span>${String((index % 5) * 20 + 20).padStart(2, "0")}</span></span>`);
+  });
+  root.querySelectorAll(".step-card").forEach((card, index) => {
+    const icon = card.querySelector(".step-flow-visual");
+    if (!icon) return;
+    const illustrations = [
+      '<circle cx="94" cy="39" r="21"/><path d="m110 55 17 17M85 39h18M94 30v18M80 70h-20m20 0 7-7m-7 7 7 7"/>',
+      '<path d="M110 20v53M70 32h80M110 22l-32 10m32-10 32 10M77 34l-16 25h32L77 34Zm66 0-16 25h32l-16-25ZM91 75h38M104 68h12"/>',
+      '<path d="M71 46 88 30q6-5 12 0l4 4q6-6 12 0l4 4q6-5 12 1l15 14q5 6-1 11l-3 3q-6 5-11 0l-4-4q-6 5-11 0l-4-4q-6 4-11-1l-8-8-8 8q-5 5-10 0l-5-5q-5-6 0-11Z"/><path d="m101 34 12 11m-2-10 11 10m-2-7 11 11"/>',
+    ];
+    icon.innerHTML = illustrations[index] || illustrations[0];
+    icon.setAttribute("viewBox", "0 0 220 90");
   });
 }
 
