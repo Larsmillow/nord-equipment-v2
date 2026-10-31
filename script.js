@@ -230,53 +230,37 @@ function breakEvenMarkup(product) {
   return `<p class="break-even-note">Планируете работу дольше? Покупка выгоднее примерно с <strong>${days} дней</strong> аренды по долгосрочному тарифу ${money.format(offer.dailyRate)} ₽/сутки. Без учёта доставки и комплектации.</p>`;
 }
 
-function globalCommerceSwitch(placement) {
+function globalCommerceSwitch() {
   const mode = currentCommerceMode();
-  const chosen = commerceMode !== null;
-  const hint = placement === "hero" && !chosen
-    ? `<p class="global-mode-hint" data-global-mode-hint>Выберите формат работы, чтобы мы показали подходящие цены и условия</p>`
-    : "";
-  return `<div class="global-mode-control global-mode-control--${placement}">
-    <div class="global-mode-switch" data-global-mode-switch data-mode="${mode}" data-chosen="${chosen}" role="group" aria-label="Глобальный режим покупки или аренды">
-      <button class="global-mode-option" type="button" data-global-mode="buy" aria-pressed="${chosen && mode === "buy"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-10Z"/><path d="M4.5 8.5 12 13l7.5-4.5M12 13v7M8 6.3l7.5 4.5"/></svg><span>Купить</span></button>
-      <button class="global-mode-option" type="button" data-global-mode="rent" aria-pressed="${chosen && mode === "rent"}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg><span>Арендовать</span></button>
-    </div>${hint}
+  return `<div class="global-mode-control global-mode-control--header">
+    <div class="global-mode-switch" data-global-mode-switch data-mode="${mode}" role="group" aria-label="Глобальный режим покупки или аренды">
+      <button class="global-mode-option" type="button" data-global-mode="buy" aria-pressed="${mode === "buy"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v10a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-10Z"/><path d="M4.5 8.5 12 13l7.5-4.5M12 13v7M8 6.3l7.5 4.5"/></svg><span>Купить</span></button>
+      <button class="global-mode-option" type="button" data-global-mode="rent" aria-pressed="${mode === "rent"}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg><span>Арендовать</span></button>
+    </div>
   </div>`;
 }
 
 function syncCommerceMode({ animate = false } = {}) {
   const mode = currentCommerceMode();
-  const chosen = commerceMode !== null;
   document.querySelectorAll("[data-global-mode-switch]").forEach((switcher) => {
     switcher.dataset.mode = mode;
-    switcher.dataset.chosen = String(chosen);
     switcher.querySelectorAll("[data-global-mode]").forEach((option) => {
-      option.setAttribute("aria-pressed", String(chosen && option.dataset.globalMode === mode));
-      option.classList.toggle("is-pulsing", chosen && option.dataset.globalMode === mode && animate);
+      const active = option.dataset.globalMode === mode;
+      option.setAttribute("aria-pressed", String(active));
+      option.classList.toggle("is-pulsing", active && animate);
     });
-  });
-  document.querySelectorAll("[data-global-mode-hint]").forEach((hint) => { hint.hidden = chosen; });
-  document.querySelectorAll("[data-mode-navigation]").forEach((link) => {
-    link.classList.toggle("is-mode-active", chosen && link.dataset.modeValue === mode);
   });
   const hero = document.querySelector(".hero");
   if (hero) {
     const renting = mode === "rent";
     const copy = hero.querySelector("[data-hero-mode-copy]");
     const primary = hero.querySelector("[data-hero-primary]");
-    const alternate = hero.querySelector("[data-hero-alternate]");
     if (copy) copy.textContent = renting
       ? "Арендуйте профессиональное оборудование на нужный срок — без лишних вложений. Поможем подобрать технику под ваш объект и материал."
       : "Окрасочные аппараты, оборудование для шпаклёвки и огнезащиты — в продажу и аренду. Поможем подобрать решение под объект и материал.";
     if (primary) {
       primary.href = renting ? "rent.html" : "catalog.html";
       primary.textContent = renting ? "Перейти к аренде" : "Перейти в каталог покупки";
-      primary.dataset.modeValue = mode;
-    }
-    if (alternate) {
-      alternate.href = renting ? "catalog.html" : "rent.html";
-      alternate.textContent = renting ? "или посмотреть покупку" : "или посмотреть аренду";
-      alternate.dataset.modeValue = renting ? "buy" : "rent";
     }
   }
   document.querySelectorAll("[data-commerce-panel]").forEach((panel) => {
@@ -287,7 +271,7 @@ function syncCommerceMode({ animate = false } = {}) {
     const available = Boolean(rentalOffer(product));
     switcher.dataset.mode = available ? mode : "unavailable";
     switcher.querySelectorAll("[data-commerce-mode]").forEach((option) => {
-      option.setAttribute("aria-pressed", String(chosen && available && option.dataset.commerceMode === mode));
+      option.setAttribute("aria-pressed", String(available && option.dataset.commerceMode === mode));
     });
     const offer = panel.querySelector("[data-commerce-offer]");
     if (animate) offer.classList.remove("is-changing");
@@ -347,13 +331,13 @@ function renderHeader() {
   document.querySelector("#site-header").innerHTML = `<header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="index.html" aria-label="NORD — главная"><img class="brand-logo" src="assets/products/logo.png" alt="NORD — оборудование для малярных работ"><svg class="brand-outline" viewBox="0 0 168 62" aria-hidden="true" focusable="false"><rect x="0.75" y="0.75" width="166.5" height="60.5" rx="10" ry="10" pathLength="1000"></rect></svg></a>
-      ${globalCommerceSwitch("header")}
       <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Открыть меню"><span></span><span></span></button>
         <nav class="site-nav" id="site-nav" aria-label="Основная навигация">
-          <a href="catalog.html" data-mode-navigation data-mode-value="buy"${["catalog", "category", "product"].includes(page) ? ' aria-current="page"' : ""}>Купить</a>
-          <a href="rent.html" data-mode-navigation data-mode-value="rent"${active("rent")}>Арендовать</a>
+          <details class="nav-catalog"><summary${["catalog", "category", "product"].includes(page) ? ' aria-current="page"' : ""}>Каталог</summary><div class="mega-menu">${categories.map((category) => `<div class="mega-menu-group"><a class="mega-menu-title" href="category.html?category=${category.id}">${category.name}</a>${category.children.map(([name, href]) => `<a href="${href}">${name} ↗</a>`).join("")}</div>`).join("")}</div></details>
+          <a href="rent.html"${active("rent")}>Аренда</a>
           <a href="delivery.html"${active("delivery")}>Доставка</a><a href="about.html"${active("about")}>О компании</a><a href="blog.html"${active("blog")}>Статьи</a><a href="contacts.html"${active("contacts")}>Контакты</a>
         </nav>
+      ${globalCommerceSwitch()}
       <div class="header-actions"><a class="icon-link" href="favorites.html" aria-label="Избранное">♡<span class="count" data-favorites-count>${favorites.length}</span></a><a class="icon-link" href="cart.html" aria-label="Корзина">▢<span class="count" data-cart-count>${Object.values(cart).reduce((a, b) => a + b, 0)}</span></a><a class="icon-link" href="account.html" aria-label="Личный кабинет">♙</a></div>
     </div>
   </header>`;
@@ -416,10 +400,6 @@ function contactBand(title = "Нужна помощь с подбором?", tex
   return `<div class="contact-band"><div><h2>${title}</h2><p>${text}</p></div><a class="button button-primary" href="contacts.html">Связаться с Nord <span aria-hidden="true">↗</span></a></div>`;
 }
 
-function homeCommerceSwitch() {
-  return globalCommerceSwitch("hero");
-}
-
 function purchaseTrustGrid() {
   return `<div class="purchase-trust-grid">
     <article class="info-card"><p class="eyebrow">Гарантия и сервис</p><h3>Условия по каждой модели</h3><p>Срок и порядок гарантийного обслуживания указываются для конкретного аппарата. Для PUTTER PT-9528-X действует 2 года гарантии от магазина.</p></article>
@@ -430,9 +410,9 @@ function purchaseTrustGrid() {
 }
 
 function renderHome() {
-  return `<section class="hero"><div class="container">${homeCommerceSwitch()}<div class="hero-grid">
+  return `<section class="hero"><div class="container"><div class="hero-grid">
     <div class="hero-copy"><p class="eyebrow">Оборудование для профессиональной отделки</p><h1>Техника для работы.<br><span>Подбор без лишнего.</span></h1><p data-hero-mode-copy></p>
-      <div class="hero-mode-actions"><a class="button button-primary" data-hero-primary data-mode-navigation data-mode-value="${currentCommerceMode()}" href="${currentCommerceMode() === "rent" ? "rent.html" : "catalog.html"}">${currentCommerceMode() === "rent" ? "Перейти к аренде" : "Перейти в каталог покупки"}</a><a class="hero-alternate-link" data-hero-alternate data-mode-navigation data-mode-value="${currentCommerceMode() === "rent" ? "buy" : "rent"}" href="${currentCommerceMode() === "rent" ? "catalog.html" : "rent.html"}">${currentCommerceMode() === "rent" ? "или посмотреть покупку" : "или посмотреть аренду"}</a></div>
+      <div class="hero-mode-actions"><a class="button button-primary" data-hero-primary href="${currentCommerceMode() === "rent" ? "rent.html" : "catalog.html"}">${currentCommerceMode() === "rent" ? "Перейти к аренде" : "Перейти в каталог покупки"}</a></div>
       <div class="hero-points"><span>Продажа и аренда</span><span>Подбор под задачу</span><span>Москва и доставка</span></div>
     </div>
     <div class="hero-visual"><span class="hero-podium" aria-hidden="true"></span><img src="assets/products/putter-9528x-cutout.png" alt="Окрасочный аппарат PUTTER 9528-X QuickReel"><div class="hero-stamp hero-chip hero-chip-model"><strong>PUTTER 9528-X</strong><span>Система QuickReel</span></div><div class="hero-stamp hero-chip hero-chip-flow"><strong>10,5 л/мин</strong><span>Максимальная подача</span></div><div class="hero-stamp hero-chip hero-chip-pressure"><strong>5 000 Вт</strong><span>Мощность</span></div><div class="hero-flow-particles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div></div>

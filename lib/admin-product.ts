@@ -1,0 +1,27 @@
+import { z } from "zod";
+
+export const productSchema = z.object({
+  id: z.string().trim().min(1).max(160),
+  name: z.string().trim().min(2).max(250),
+  slug: z.string().trim().regex(/^[a-z0-9-]+$/).max(200),
+  shortName: z.string().max(120).default(""),
+  description: z.string().max(5000).default(""),
+  categorySlug: z.string().min(1).max(120),
+  manufacturer: z.string().max(120).default(""),
+  model: z.string().max(120).default(""),
+  images: z.array(z.object({ src: z.string().max(1000), alt: z.string().max(300) })).max(20).default([]),
+  characteristics: z.array(z.object({ name: z.string().max(150), value: z.string().max(500) })).max(60).default([]),
+  materials: z.string().max(3000).default(""),
+  purchasePrice: z.number().int().nonnegative().nullable(),
+  rentalPriceDaily: z.number().int().nonnegative().nullable(),
+  rentalMinDays: z.number().int().min(1).max(365).default(1),
+  stockQuantity: z.number().int().min(0).max(100000),
+  purchaseEnabled: z.boolean(),
+  rentalEnabled: z.boolean(),
+  published: z.boolean(),
+  badge: z.string().max(120).default(""),
+  sourceUrl: z.string().url().nullable().optional(),
+  flowLpm: z.number().nonnegative().nullable().optional(),
+  drive: z.string().max(40).default("unknown"),
+  features: z.array(z.string().max(100)).max(30).default([]),
+});
