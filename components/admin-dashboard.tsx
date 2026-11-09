@@ -79,14 +79,10 @@ const statusNames: Record<string, string> = {
 };
 
 const categoryOptions = [
-  ["painting", "Окрасочное оборудование"],
-  ["putty", "Шпаклёвочное оборудование"],
-  ["fire", "Огнезащитное оборудование"],
-  ["hydraulic", "Гидравлические распылители"],
-  ["texture", "Текстурные распылители"],
-  ["waterproof", "Гидроизоляция"],
-  ["marking", "Дорожная разметка"],
-  ["accessories", "Комплектующие и расходники"],
+  ["piston_paint", "Окрасочные аппараты"],
+  ["piston_putty", "Шпаклёвочные станции HD"],
+  ["screw_putty", "Шнековые шпаклёвочные аппараты"],
+  ["spares_accessories", "Запчасти и аксессуары (ЗИП)"],
 ];
 
 const money = (value: number) => `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;

@@ -1,0 +1,1839 @@
+/* ==========================================================================
+   NORD LAB — VIRTUAL SPRAY SIMULATOR & TELEMETRY TEST BENCH
+   Swiss Blueprint & Cobalt Engineering Design System (Refactored)
+   ========================================================================== */
+
+.nord-lab-page {
+  --font-mono: var(--font-manrope), Manrope, var(--font-inter), Inter, -apple-system, sans-serif;
+  min-height: calc(100vh - 80px);
+  background: #060b14;
+  color: #e2e8f0;
+  font-family: var(--font-manrope), Manrope, var(--font-inter), Inter, -apple-system, sans-serif;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1025px) and (min-height: 840px) {
+  .nord-lab-page {
+    height: calc(100vh - 110px);
+    max-height: calc(100vh - 110px);
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 1025px) and (max-height: 839px) {
+  .nord-lab-page {
+    min-height: calc(100vh - 110px);
+    height: auto;
+    overflow-y: auto;
+  }
+}
+
+/* Header */
+.nord-lab-header {
+  background: linear-gradient(135deg, #071224 0%, #0c1f40 50%, #060e1c 100%);
+  border-bottom: 1px solid #162a50;
+  flex-shrink: 0;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+}
+
+.nord-lab-header-inner {
+  max-width: 1720px;
+  margin: 0 auto;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nord-lab-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nord-lab-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1e4fa3 0%, #0b2149 100%);
+  border: 1px solid #3b74d4;
+  box-shadow: 0 4px 14px rgba(30, 79, 163, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.nord-lab-title {
+  font-family: var(--font-manrope), sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nord-lab-tag {
+  font-size: 10px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.nord-lab-status {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nord-lab-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  display: inline-block;
+  animation: labPulse 2s infinite;
+}
+
+@keyframes labPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+.nord-lab-tabs {
+  display: flex;
+  background: #091322;
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid #162744;
+  gap: 3px;
+}
+
+.nord-lab-tab-btn {
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nord-lab-tab-btn.active {
+  background: #1e4fa3;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(30, 79, 163, 0.45);
+}
+
+.nord-lab-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nord-lab-btn-crash {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.nord-lab-btn-crash:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: rgba(239, 68, 68, 0.7);
+}
+
+.nord-lab-btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #1c325e;
+  background: #091322;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nord-lab-btn-icon:hover {
+  background: #10213d;
+  border-color: #38bdf8;
+}
+
+.nord-lab-btn-bonus {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 6px;
+  border: none;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+  transition: all 0.2s;
+}
+
+/* ==========================================================================
+   1. FIXED 12-COL / 3-COL MAIN CONTAINER (NO CLIPPING, INTERNAL SCROLL)
+   ========================================================================== */
+.nord-lab-main {
+  max-width: 1720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 4px 10px 6px;
+  display: grid;
+  grid-template-columns: 290px 1fr 310px;
+  gap: 8px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 1280px) {
+  .nord-lab-main {
+    grid-template-columns: 270px 1fr 290px;
+    gap: 10px;
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .nord-lab-main {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow-y: auto;
+    gap: 14px;
+    padding: 12px;
+  }
+}
+
+/* Left & Right scrollable sidebars */
+.nord-lab-col-left,
+.nord-lab-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 3px;
+}
+
+@media (max-width: 1024px) {
+  .nord-lab-col-left,
+  .nord-lab-col-right {
+    height: auto;
+    overflow-y: visible;
+    padding-right: 0;
+  }
+}
+
+/* Custom compact scrollbar */
+.nord-lab-col-left::-webkit-scrollbar,
+.nord-lab-col-right::-webkit-scrollbar {
+  width: 5px;
+}
+.nord-lab-col-left::-webkit-scrollbar-track,
+.nord-lab-col-right::-webkit-scrollbar-track {
+  background: rgba(9, 19, 34, 0.4);
+}
+.nord-lab-col-left::-webkit-scrollbar-thumb,
+.nord-lab-col-right::-webkit-scrollbar-thumb {
+  background: #192d4f;
+  border-radius: 4px;
+}
+.nord-lab-col-left::-webkit-scrollbar-thumb:hover,
+.nord-lab-col-right::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
+
+/* Compact Cards (Optimized vertical padding to prevent clipping) */
+.nord-lab-card {
+  background: #091322;
+  border: 1px solid #142442;
+  border-radius: 6px;
+  padding: 3.5px 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.nord-lab-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5px;
+}
+
+.nord-lab-card-title {
+  font-size: 9.5px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nord-lab-card-sub {
+  font-size: 8.5px;
+  font-family: var(--font-mono), monospace;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* Machine List */
+.nord-lab-machine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5px;
+}
+
+.nord-lab-machine-item {
+  width: 100%;
+  text-align: left;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #142442;
+  background: #060e1a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nord-lab-machine-item:hover {
+  border-color: #244177;
+}
+
+.nord-lab-machine-item.active {
+  background: linear-gradient(135deg, rgba(30, 79, 163, 0.25) 0%, rgba(13, 34, 73, 0.45) 100%);
+  border-color: #3b74d4;
+  box-shadow: 0 0 8px rgba(30, 79, 163, 0.35);
+}
+
+.nord-lab-machine-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nord-lab-machine-name {
+  font-weight: 800;
+  font-size: 11.5px;
+  color: #ffffff;
+}
+
+.nord-lab-machine-flow {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.nord-lab-machine-sub {
+  font-size: 9px;
+  color: #8da2c0;
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+.nord-lab-machine-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.nord-lab-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.nord-lab-badge-blue {
+  background: rgba(30, 79, 163, 0.2);
+  border-color: rgba(59, 116, 212, 0.5);
+  color: #93c5fd;
+}
+
+.nord-lab-badge-amber {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fcd34d;
+}
+
+.nord-lab-badge-orange {
+  background: rgba(249, 115, 22, 0.15);
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #fdba74;
+}
+
+.nord-lab-weak-alert {
+  margin-top: 2px;
+  font-size: 8.5px;
+  color: #f87171;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Material List */
+.nord-lab-material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nord-lab-material-item {
+  width: 100%;
+  text-align: left;
+  padding: 2.5px 5px;
+  border-radius: 4px;
+  border: 1px solid #142442;
+  background: #060e1a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nord-lab-material-item:hover {
+  border-color: #244177;
+}
+
+.nord-lab-material-item.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+.nord-lab-material-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nord-lab-material-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nord-lab-material-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 3px rgba(0,0,0,0.5);
+}
+
+.nord-lab-material-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.nord-lab-material-wft {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  background: #0d1a2f;
+  padding: 1px 3px;
+  border-radius: 3px;
+  color: #94a3b8;
+}
+
+.nord-lab-material-brand {
+  font-size: 9px;
+  color: #7d93b3;
+  margin-top: 1px;
+  padding-left: 14px;
+}
+
+/* Nozzle selector (6 nozzles: 211, 313, 517, 527, 535, 643) */
+.nord-lab-tip-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  margin-bottom: 5px;
+}
+
+.nord-lab-tip-btn {
+  padding: 4px 2px;
+  border-radius: 4px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid #142442;
+  background: #060e1a;
+  color: #cbd5e1;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.15s;
+}
+
+.nord-lab-tip-btn:hover {
+  border-color: #38bdf8;
+}
+
+.nord-lab-tip-btn.active {
+  background: #1e4fa3;
+  border-color: #60a5fa;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(30, 79, 163, 0.5);
+}
+
+.nord-lab-tip-btn.oversized {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.nord-lab-tip-sub {
+  font-size: 7.5px;
+  font-weight: normal;
+  opacity: 0.8;
+  margin-top: 1px;
+}
+
+.nord-lab-tip-info {
+  font-size: 9.5px;
+  color: #94a3b8;
+  background: #060e1a;
+  padding: 4px 6px;
+  border-radius: 5px;
+  border: 1px solid #111e33;
+  margin-bottom: 5px;
+  line-height: 1.25;
+}
+
+/* Sliders */
+.nord-lab-slider-row {
+  margin-top: 3px;
+}
+
+.nord-lab-slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+}
+
+.nord-lab-range {
+  width: 100%;
+  accent-color: #1e4fa3;
+  cursor: pointer;
+}
+
+.nord-lab-slider-hints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.5px;
+  font-family: var(--font-mono), monospace;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* ==========================================================================
+   CENTER STAGE & REALISTIC WALL CANVAS
+   ========================================================================== */
+.nord-lab-center {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.nord-lab-toolbar {
+  background: #091322;
+  border: 1px solid #142442;
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nord-lab-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.nord-lab-tool-btn {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 5px;
+  border: 1px solid #142442;
+  background: #060e1a;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+
+.nord-lab-tool-btn:hover {
+  color: #ffffff;
+}
+
+.nord-lab-tool-btn.active {
+  background: #1e4fa3;
+  border-color: #3b74d4;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(30, 79, 163, 0.4);
+}
+
+/* Substrate Selector */
+.nord-lab-substrate-select {
+  display: flex;
+  background: #060e1a;
+  border: 1px solid #142442;
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.nord-lab-sub-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #8da2c0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nord-lab-sub-btn:hover {
+  color: #ffffff;
+}
+
+.nord-lab-sub-btn.active {
+  background: #1e4fa3;
+  color: #ffffff;
+}
+
+/* Crash Banner Overlay on Canvas */
+.nord-lab-crash-banner {
+  background: linear-gradient(135deg, rgba(88, 12, 12, 0.95) 0%, rgba(35, 11, 22, 0.95) 100%);
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+  animation: labShake 0.4s ease-in-out;
+}
+
+@keyframes labShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+
+.nord-lab-crash-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nord-lab-crash-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nord-lab-crash-badge {
+  font-size: 9px;
+  font-family: var(--font-mono), monospace;
+  font-weight: 900;
+  background: #ef4444;
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.nord-lab-crash-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 1px;
+}
+
+.nord-lab-crash-desc {
+  font-size: 10px;
+  color: #fca5a5;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.nord-lab-btn-upgrade {
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: none;
+  background: #1e4fa3;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(30, 79, 163, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.nord-lab-btn-upgrade:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   VIEWPORT (REALISTIC WALL CANVAS)
+   ========================================================================== */
+.nord-lab-viewport {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 380px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #1a2f58;
+  background: #737984; /* Concrete fallback */
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.4);
+  cursor: none;
+  user-select: none;
+  touch-action: none;
+}
+
+@media (max-width: 1024px) {
+  .nord-lab-viewport {
+    height: 420px;
+    flex: none;
+  }
+}
+
+.nord-lab-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.nord-lab-hud-top {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  gap: 6px;
+}
+
+.nord-lab-hud-pill {
+  background: rgba(6, 14, 26, 0.85);
+  border: 1px solid #1c3566;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-family: var(--font-mono), monospace;
+  color: #cbd5e1;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.nord-lab-hud-bottom {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: none;
+  gap: 6px;
+}
+
+.nord-lab-fire-mobile {
+  pointer-events: auto;
+  display: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  border: 2px solid #3b74d4;
+  background: #1e4fa3;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(30, 79, 163, 0.6);
+}
+
+@media (max-width: 640px) {
+  .nord-lab-fire-mobile {
+    display: block;
+  }
+}
+
+/* Challenge Banner */
+.nord-lab-challenge-bar {
+  background: linear-gradient(135deg, #091322 0%, #0d1e38 50%, #091322 100%);
+  border: 1px solid #162c54;
+  border-radius: 8px;
+  padding: 5px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nord-lab-challenge-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nord-lab-challenge-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(30, 79, 163, 0.25);
+  border: 1px solid #3b74d4;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nord-lab-challenge-icon.unlocked {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN (MANOMETER, TELEMETRY, ROI & COMPACTED CARDS)
+   ========================================================================== */
+.nord-lab-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+.nord-lab-valve-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  background: #060e1a;
+  padding: 2px;
+  border-radius: 5px;
+  border: 1px solid #111e33;
+  margin-top: 4px;
+}
+
+.nord-lab-valve-btn {
+  padding: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.nord-lab-valve-btn.active {
+  background: #1e4fa3;
+  color: #ffffff;
+}
+
+.nord-lab-valve-btn.active.prime {
+  background: #d97706;
+  color: #ffffff;
+}
+
+/* Telemetry Grid */
+.nord-lab-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+.nord-lab-stat-box {
+  background: #060e1a;
+  border: 1px solid #111e33;
+  border-radius: 5px;
+  padding: 2.5px 5px;
+}
+
+.nord-lab-stat-label {
+  font-size: 8px;
+  color: #8da2c0;
+  display: block;
+}
+
+.nord-lab-stat-val {
+  font-family: var(--font-mono), monospace;
+  font-size: 12.5px;
+  font-weight: 900;
+  color: #ffffff;
+  margin-top: 0px;
+}
+
+.nord-lab-stat-unit {
+  font-size: 8.5px;
+  font-weight: normal;
+  color: #64748b;
+  margin-left: 2px;
+}
+
+/* ROI Module */
+.nord-lab-roi-card {
+  background: linear-gradient(135deg, #091322 0%, #0c1a33 100%);
+  border: 1px solid #1c3766;
+  border-radius: 8px;
+  padding: 4px 6px;
+  flex-shrink: 0;
+}
+
+.nord-lab-roi-summary {
+  background: #060e1a;
+  border: 1px solid #111e33;
+  border-radius: 5px;
+  padding: 5px 6px;
+  font-size: 9.5px;
+  line-height: 1.35;
+  color: #cbd5e1;
+  margin-bottom: 4px;
+}
+
+.nord-lab-roi-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  padding: 1.5px 0;
+}
+
+.nord-lab-roi-accent {
+  font-family: var(--font-mono), monospace;
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #10b981;
+}
+
+/* Modal */
+.nord-lab-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 18, 0.88);
+  backdrop-filter: blur(10px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.nord-lab-modal {
+  background: #091322;
+  border: 1px solid #22437c;
+  border-radius: 10px;
+  max-width: 520px;
+  width: 100%;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+  position: relative;
+}
+
+.nord-lab-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid #162c54;
+  background: #060e1a;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nord-lab-modal-close:hover {
+  color: #ffffff;
+  border-color: #3b74d4;
+}
+
+/* Architecture Docs Tab */
+.nord-lab-docs {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.nord-lab-code-block {
+  background: #040812;
+  border: 1px solid #101c33;
+  border-radius: 6px;
+  padding: 12px;
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: #38bdf8;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   2. ЛАМПА ЛОСЕВА, ДУЭЛЬ ВАЛИК VS NORD, КЛИН СОПЛА И ГОТОВАЯ СБОРКА
+   ========================================================================== */
+
+/* Кнопка проявочного света (Лампа Лосева) */
+.nord-lab-raking-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 5px;
+  border: 1px solid #1e355c;
+  background: #091528;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nord-lab-raking-btn:hover {
+  border-color: #f59e0b;
+  color: #fef3c7;
+}
+
+.nord-lab-raking-btn.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.12) 100%);
+  border-color: #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+
+/* Кнопка «Дуэль: Валик vs NORD» */
+.nord-lab-toolbar svg,
+.nord-lab-duel-btn svg,
+.nord-lab-bundle-card svg,
+.nord-lab-duel-card-floating svg,
+.nord-lab-tool-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+}
+
+.nord-lab-duel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 10.5px;
+  font-weight: 800;
+  border-radius: 5px;
+  border: 1px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, rgba(217, 119, 6, 0.15) 100%);
+  color: #fef3c7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.nord-lab-duel-btn:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.4) 0%, rgba(217, 119, 6, 0.25) 100%);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
+  transform: translateY(-1px);
+}
+
+.nord-lab-duel-btn.active {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #060e1a;
+  border-color: #fde68a;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.6);
+  animation: duelPulse 1.5s infinite;
+}
+
+@keyframes duelPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.nord-lab-duel-finish-btn {
+  padding: 4px 9px;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.nord-lab-duel-finish-btn:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Баннер готовности к дуэли над правой частью стены */
+.nord-lab-duel-ready-banner {
+  position: absolute;
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+  z-index: 35;
+  background: rgba(10, 20, 36, 0.94);
+  border: 2px dashed #38bdf8;
+  border-radius: 12px;
+  padding: 16px 20px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(56, 189, 248, 0.25);
+  pointer-events: none;
+  animation: duelReadyPulse 1.8s infinite;
+}
+
+@keyframes duelReadyPulse {
+  0%, 100% { border-color: #38bdf8; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75), 0 0 20px rgba(56, 189, 248, 0.2); }
+  50% { border-color: #f59e0b; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.75), 0 0 30px rgba(245, 158, 11, 0.4); }
+}
+
+.nord-lab-duel-ready-badge {
+  display: inline-block;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+  font-size: 9.5px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.nord-lab-duel-ready-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+
+.nord-lab-duel-ready-desc {
+  font-size: 11px;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.nord-lab-duel-ready-desc strong {
+  color: #38bdf8;
+}
+
+.nord-lab-duel-ready-hint {
+  font-size: 9.5px;
+  color: #34d399;
+  font-weight: 700;
+}
+
+/* Плавающая карточка победы в Дуэли */
+.nord-lab-duel-card-floating {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 40;
+  background: linear-gradient(135deg, #091322 0%, #0d1e38 100%);
+  border: 2px solid #10b981;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(16, 185, 129, 0.4);
+  padding: 16px 20px;
+  max-width: 440px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+  animation: duelFinishPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes duelFinishPop {
+  0% { opacity: 0; transform: translate(-50%, -46%) scale(0.92); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.nord-lab-duel-card-badge {
+  display: inline-block;
+  align-self: center;
+  background: #10b981;
+  color: #042111;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.nord-lab-duel-card-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.nord-lab-duel-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.nord-lab-duel-side-box {
+  padding: 8px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.nord-lab-duel-side-box.nord {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.nord-lab-duel-side-box.roller {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.nord-lab-duel-side-title {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.nord-lab-duel-side-val {
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 2px 0;
+}
+
+.nord-lab-duel-side-sub {
+  font-size: 8.5px;
+  color: #8da2c0;
+  line-height: 1.25;
+}
+
+.nord-lab-duel-saving-banner {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  color: #fef3c7;
+  line-height: 1.35;
+}
+
+.nord-lab-duel-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.nord-lab-duel-cta-btn {
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 7px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(29, 78, 216, 0.45);
+  transition: all 0.2s;
+}
+
+.nord-lab-duel-cta-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #60a5fa;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.6);
+  transform: translateY(-1px);
+}
+
+.nord-lab-duel-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.nord-lab-duel-btn-sec {
+  padding: 6px 10px;
+  background: #091322;
+  border: 1px solid #1e3a6a;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.nord-lab-duel-btn-sec:hover {
+  color: #ffffff;
+  border-color: #38bdf8;
+}
+
+.nord-lab-duel-btn-close {
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #64748b;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nord-lab-duel-btn-close:hover {
+  color: #cbd5e1;
+}
+
+/* Интерактивное уведомление о засоре сопла возле пистолета */
+.nord-lab-clog-floating {
+  position: absolute;
+  z-index: 25;
+  background: linear-gradient(135deg, #18090b 0%, #29080e 100%);
+  border: 1px solid #f43f5e;
+  box-shadow: 0 10px 30px rgba(244, 63, 94, 0.45), 0 0 0 1px rgba(244, 63, 94, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  animation: clogShake 0.4s ease-in-out infinite alternate;
+  max-width: 310px;
+}
+
+@keyframes clogShake {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+.nord-lab-clog-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fda4af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nord-lab-clog-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  border: 1px solid #fb7185;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.4);
+}
+
+.nord-lab-clog-btn:hover {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  transform: scale(1.02);
+}
+
+/* Карточка «Готовая инженерная сборка под вашу задачу» */
+.nord-lab-bundle-card {
+  background: linear-gradient(135deg, #091322 0%, #0d1e38 100%);
+  border: 1px solid #224a86;
+  border-radius: 8px;
+  padding: 4.5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 3.5px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.nord-lab-bundle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #162c52;
+  padding-bottom: 3px;
+}
+
+.nord-lab-bundle-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-manrope), sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: #38bdf8;
+  text-transform: uppercase;
+}
+
+.nord-lab-bundle-badge {
+  font-size: 8px;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.nord-lab-bundle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nord-lab-bundle-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 8.5px;
+  line-height: 1.2;
+  color: #cbd5e1;
+  background: rgba(6, 15, 29, 0.5);
+  padding: 1.5px 4px;
+  border-radius: 3px;
+  border-left: 2px solid #2563eb;
+}
+
+.nord-lab-bundle-label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.nord-lab-bundle-val {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+}
+
+.nord-lab-bundle-footer {
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+  border-top: 1px dashed #1c3766;
+  gap: 4px;
+}
+
+.nord-lab-bundle-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nord-lab-bundle-total-label {
+  font-size: 8.5px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.nord-lab-bundle-total-price {
+  font-family: var(--font-mono), monospace;
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #34d399;
+}
+
+.nord-lab-bundle-btn-full {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(29, 78, 216, 0.4);
+  transition: all 0.2s;
+}
+
+.nord-lab-bundle-btn-full:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #60a5fa;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.55);
+  transform: translateY(-1px);
+}
+
+.nord-lab-bundle-btn {
+  flex: 1;
+  padding: 6px 8px;
+  background: linear-gradient(135deg, #1e4fa3 0%, #173b7d 100%);
+  border: 1px solid #3b82f6;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: 0 4px 14px rgba(30, 79, 163, 0.4);
+  transition: all 0.2s;
+}
+
+.nord-lab-bundle-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e4fa3 100%);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Visual 5-Class Machine Switcher Strip with Photos right above the 3D Wall */
+.nord-lab-machine-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px 6px;
+  background: #081224;
+  border: 1px solid #162c54;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.nord-lab-strip-card {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #162a4c;
+  background: #0b1830;
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 0;
+}
+
+.nord-lab-strip-card:hover {
+  border-color: #38bdf8;
+  background: #0f2142;
+}
+
+.nord-lab-strip-card.active {
+  border-color: #38bdf8;
+  background: linear-gradient(135deg, #102a56 0%, #0d2144 100%);
+  box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.nord-lab-strip-thumb {
+  width: 34px;
+  height: 36px;
+  border-radius: 4px;
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+  flex-shrink: 0;
+}
+
+.nord-lab-strip-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.nord-lab-strip-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nord-lab-strip-class {
+  font-size: 8px;
+  font-weight: 800;
+  color: #38bdf8;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.nord-lab-strip-name {
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nord-lab-strip-price {
+  font-size: 9px;
+  font-weight: 700;
+  color: #34d399;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   MOBILE-FIRST ERGONOMICS FOR NORD LAB (3D WALL ALWAYS FIRST ON SCREEN!)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .nord-lab-machine-strip {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding: 5px;
+  }
+
+  .nord-lab-machine-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nord-lab-strip-card {
+    flex: 0 0 144px;
+    scroll-snap-align: start;
+  }
+
+  .nord-lab-header-inner {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .nord-lab-logo-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .nord-lab-title {
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  .nord-lab-status {
+    display: none;
+  }
+
+  .nord-lab-tabs {
+    order: 2;
+  }
+
+  .nord-lab-tab-btn {
+    padding: 4px 8px;
+    font-size: 10.5px;
+  }
+
+  .nord-lab-header-actions {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .nord-lab-btn-crash,
+  .nord-lab-btn-bonus {
+    flex: 1;
+    justify-content: center;
+    padding: 5px 8px;
+    font-size: 10.5px;
+  }
+
+  .nord-lab-main {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 8px 80px;
+  }
+
+  /* 1-м на экране смартфона идет 3D-СТЕНА С МАЛЯРОМ И ПИСТОЛЕТОМ! */
+  .nord-lab-center {
+    order: 1;
+    min-height: auto;
+  }
+
+  .nord-lab-toolbar {
+    padding: 6px;
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nord-lab-tool-group,
+  .nord-lab-substrate-select {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nord-lab-viewport {
+    height: 345px !important;
+    min-height: 325px !important;
+    max-height: 365px !important;
+    border-radius: 10px;
+  }
+
+  .nord-lab-hud-top {
+    top: 5px;
+    left: 6px;
+    right: 6px;
+    gap: 4px;
+  }
+
+  .nord-lab-hud-pill {
+    font-size: 9.5px;
+    padding: 3px 7px;
+    white-space: nowrap;
+  }
+
+  .nord-lab-hud-bottom {
+    bottom: 6px;
+    left: 6px;
+    right: 6px;
+  }
+
+  .nord-lab-hud-bottom .nord-lab-hud-pill {
+    display: none;
+  }
+
+  .nord-lab-fire-mobile {
+    display: inline-flex !important;
+    width: 100%;
+    justify-content: center;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  /* 2-м идет выбор Класса Аппарата, Рабочего состава и Сопла */
+  .nord-lab-col-left {
+    order: 2;
+    height: auto;
+    overflow: visible;
+    gap: 8px;
+  }
+
+  /* 3-м идет Манометр, Телеметрия и Расчёт окупаемости с PDF */
+  .nord-lab-col-right {
+    order: 3;
+    height: auto;
+    overflow: visible;
+    gap: 8px;
+  }
+}

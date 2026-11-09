@@ -1,9 +1,9 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageHero } from "@/components/page-hero";
 import { CatalogBrowser } from "@/components/catalog-browser";
-import { getCategories, getProducts } from "@/lib/catalog";
+import { ContactRequestForm } from "@/components/contact-request-form";
+import { getCategories, getProducts, normalizeCategorySlug } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const normalized = normalizeCategorySlug(slug) || slug;
   const categories = await getCategories();
-  const category = categories.find((item) => item.slug === slug);
+  const category = categories.find((item) => item.slug === normalized);
   if (!category) return { title: "Категория | NORD" };
   return {
     title: `${category.name} — купить и арендовать в Москве | NORD`,
@@ -24,8 +25,9 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [categories, products] = await Promise.all([getCategories(), getProducts(slug)]);
-  const category = categories.find((item) => item.slug === slug);
+  const normalized = normalizeCategorySlug(slug) || slug;
+  const [categories, allProducts] = await Promise.all([getCategories(), getProducts("all")]);
+  const category = categories.find((item) => item.slug === normalized);
   if (!category) notFound();
 
   return (
@@ -33,22 +35,16 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <PageHero
         title={category.name}
         description={category.description}
-        eyebrow={`КАТАЛОГ // ${category.name.toUpperCase()}`}
+        eyebrow={`КАТАЛОГ ОБОРУДОВАНИЯ · ${category.name.toUpperCase()}`}
         theme="spray"
       />
-      <section className="section">
+      <section className="section section-blueprint">
         <div className="container">
-          {products.length ? (
-            <CatalogBrowser products={products} categories={categories} categorySlug={slug} />
-          ) : (
-            <div className="empty-state">
-              <h2>Спецификации в разделе «{category.name}» комплектуются под запрос</h2>
-              <p>Свяжитесь с инженерным отделом NORD для получения прайс-листа или подбора оборудования.</p>
-              <Link className="button button-primary" href="/contacts">
-                Запросить спецификацию
-              </Link>
-            </div>
-          )}
+          <CatalogBrowser products={allProducts} categories={categories} categorySlug={normalized} />
+
+          <div style={{ marginTop: 48 }}>
+            <ContactRequestForm subject={`Запрос КП и подбора по разделу «${category.name}»`} />
+          </div>
         </div>
       </section>
     </>

@@ -115,8 +115,38 @@ export function SiteHeader() {
         </Link>
 
         <nav className={`site-nav${menuOpen ? " is-open" : ""}`} id="site-nav" aria-label="Основная навигация">
+          <form className="m-nav-search" onSubmit={handleSearchSubmit} role="search">
+            <input
+              type="search"
+              placeholder="Поиск: NORD-8000 PRO, 350 бар…"
+              aria-label="Поиск по каталогу"
+              value={quickSearch}
+              onChange={(e) => setQuickSearch(e.target.value)}
+            />
+            <button type="submit" aria-label="Найти">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </button>
+          </form>
+          <div className="m-nav-mode" data-mode={mode} role="group" aria-label="Режим магазина">
+            {(["buy", "rent"] as const).map((itemMode) => (
+              <button
+                key={itemMode}
+                type="button"
+                aria-pressed={mode === itemMode}
+                onClick={() => setMode(itemMode)}
+              >
+                {itemMode === "buy" ? "Покупка" : "Аренда"}
+              </button>
+            ))}
+          </div>
           <Link href="/catalog" className={pathname?.startsWith("/catalog") || pathname?.startsWith("/category") ? "is-current" : ""}>
             Каталог оборудования
+          </Link>
+          <Link href="/lab" className={pathname === "/lab" ? "is-current" : ""} style={{ position: "relative" }}>
+            Тест-стенд NORD LAB
           </Link>
           <Link href="/rent" className={pathname === "/rent" ? "is-current" : ""}>
             Аренда
@@ -142,7 +172,7 @@ export function SiteHeader() {
           <input
             type="search"
             className="header-search-input"
-            placeholder="Поиск по каталогу (NORD 9536, NORD 1095, 230 бар)…"
+            placeholder="Поиск по каталогу (NORD-2500, NORD-6000, NORD-18X, 350 бар)…"
             aria-label="Поиск по моделям оборудования"
             value={quickSearch}
             onChange={(e) => setQuickSearch(e.target.value)}
@@ -173,7 +203,12 @@ export function SiteHeader() {
         </div>
 
         <div className="header-actions">
-          <Link className="header-icon-btn" href="/favorites" aria-label="Избранное" title="Избранное">
+          <a className="header-icon-btn m-header-call" href={SITE_CONFIG.phoneHref} aria-label={`Позвонить ${SITE_CONFIG.phone}`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6.6 3.5 9 3l1.8 4.3-2.1 1.5a11 11 0 0 0 6.5 6.5l1.5-2.1L21 15l-.5 2.4a2.4 2.4 0 0 1-2.4 2A15.6 15.6 0 0 1 4.6 5.9a2.4 2.4 0 0 1 2-2.4z" />
+            </svg>
+          </a>
+          <Link className="header-icon-btn header-fav-btn" href="/favorites" aria-label="Избранное" title="Избранное">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 20.5s-7-4.35-9.2-8.4C1.2 9.1 2.7 5.5 6.2 4.7c2.1-.45 4.2.45 5.8 2.2 1.6-1.75 3.7-2.65 5.8-2.2 3.5.8 5 4.4 3.4 7.4-2.2 4.05-9.2 8.4-9.2 8.4z" />
             </svg>

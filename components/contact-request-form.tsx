@@ -99,7 +99,7 @@ export function ContactRequestForm({ subject = "" }: { subject?: string }) {
               className="form-control"
               name="message"
               defaultValue={subject}
-              placeholder="Например: нужен счёт с НДС на PUTTER 9528-X или подбор станции под шпаклёвку Danogips на 3 000 м²"
+              placeholder="Например: нужен счёт с НДС на NORD-8000 PRO или подбор станции под шпаклёвку Danogips на 3 000 м²"
               minLength={3}
               required
             />

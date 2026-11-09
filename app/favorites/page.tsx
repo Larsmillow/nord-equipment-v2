@@ -24,7 +24,7 @@ export default function FavoritesPage() {
       try {
         const response = await fetch("/api/products?ids=" + encodeURIComponent(ids.join(",")));
         if (!response.ok) throw new Error("Не удалось загрузить избранные товары.");
-        const data = await response.json() as { products: Product[] };
+        const data = (await response.json()) as { products: Product[] };
         if (active) setProducts(data.products);
       } catch (error) {
         console.error("Unable to load favorites.", error);
@@ -32,11 +32,46 @@ export default function FavoritesPage() {
         if (active) setLoading(false);
       }
     };
-    const onChange = () => { void load(); };
+    const onChange = () => {
+      void load();
+    };
     void load();
     window.addEventListener("nord-favorites-change", onChange);
-    return () => { active = false; window.removeEventListener("nord-favorites-change", onChange); };
+    return () => {
+      active = false;
+      window.removeEventListener("nord-favorites-change", onChange);
+    };
   }, []);
 
-  return <><PageHero title="Избранное" description="Сохранённые модели оборудования." eyebrow="Избранное" /><section className="section"><div className="container">{loading ? <p>Загружаем избранное…</p> : products.length ? <div className="product-grid">{products.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <div className="empty-state"><h2>Здесь появятся ваши модели</h2><p>Добавьте товары в избранное из каталога.</p><Link className="button button-primary" href="/catalog">Открыть каталог</Link></div>}</div></section></>;
+  return (
+    <>
+      <PageHero
+        title="Сохранённые станции для сравнения"
+        description="Отложенные окрасочные и шпаклёвочные аппараты для быстрого согласования со снабжением или сравнения ТТХ."
+        eyebrow="ИЗБРАННОЕ ОБОРУДОВАНИЕ"
+        theme="spray"
+      />
+      <section className="section section-blueprint">
+        <div className="container">
+          {loading ? (
+            <p>Загружаем сохранённые станции…</p>
+          ) : products.length ? (
+            <div className="product-grid">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <h2>В списке сравнения пока нет сохранённых станций</h2>
+              <p>Отмечайте подходящие по подаче и давлению аппараты в каталоге, чтобы быстро вернуться к ним.</p>
+              <Link className="button button-primary" href="/catalog">
+                Перейти в каталог станций →
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
+  );
 }

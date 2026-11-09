@@ -6,6 +6,8 @@ export const SITE_CONFIG = {
   phoneClean: "79996002318",
   whatsappHref: "https://wa.me/79996002318",
   telegramHref: "https://t.me/+79996002318",
+  // MAX не поддерживает ссылки по номеру телефона — нужна ссылка на профиль вида https://max.ru/u/...
+  maxHref: process.env.NEXT_PUBLIC_MAX_URL || "https://max.ru/",
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "larsmillow@nord-equip.ru",
   address: "Москва, Окружной проезд, 34Ас6",
   metro: "МЦК Соколиная гора · м. Шоссе Энтузиастов",

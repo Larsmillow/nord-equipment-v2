@@ -18,6 +18,7 @@ const legacyPages = [
 ] as const;
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   async redirects() {
     return legacyPages.map(([source, destination]) => ({
       source: `/${source}`,

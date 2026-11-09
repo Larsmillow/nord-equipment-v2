@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SITE_CONFIG } from "@/lib/site-config";
+import { MESSENGERS } from "@/components/messenger-links";
 
 export function SiteFooter() {
   return (
@@ -27,14 +28,13 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <div className="footer-title">01 // Оборудование</div>
+            <div className="footer-title">01 // Оборудование и ЗИП</div>
             <div className="footer-links">
-              <Link href="/catalog">Весь каталог техники</Link>
-              <Link href="/category/painting">Окрасочные аппараты</Link>
-              <Link href="/category/putty">Шпаклёвочные станции</Link>
-              <Link href="/category/fire">Установки огнезащиты</Link>
-              <Link href="/category/hydraulic">Гидравлические распылители</Link>
-              <Link href="/category/marking">Дорожная разметка</Link>
+              <Link href="/catalog">Все 8 станций NORD</Link>
+              <Link href="/category/piston_paint">Окрасочные аппараты (3)</Link>
+              <Link href="/category/piston_putty">Шпаклёвочные станции HD (5)</Link>
+              <Link href="/category/screw_putty">Шнековые шпаклёвочные аппараты</Link>
+              <Link href="/category/spares_accessories">Запчасти и аксессуары (ЗИП)</Link>
             </div>
           </div>
 
@@ -58,6 +58,31 @@ export function SiteFooter() {
               <Link href="/privacy">Политика конфиденциальности</Link>
               <Link href="/terms">Условия поставки и проката</Link>
             </div>
+          </div>
+        </div>
+
+        <div className="m-footer mobile-only">
+          <img className="m-footer-logo" src="/assets/products/logo.png" alt="NORD" />
+          <a className="m-footer-phone" href={SITE_CONFIG.phoneHref}>
+            {SITE_CONFIG.phone}
+          </a>
+          <span className="m-footer-meta">
+            {SITE_CONFIG.address} · {SITE_CONFIG.workHours}
+          </span>
+          <div className="m-footer-msg">
+            {MESSENGERS.map(({ key, label, href, Icon }) => (
+              <a key={key} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+                <Icon />
+              </a>
+            ))}
+          </div>
+          <div className="m-footer-links">
+            <Link href="/catalog">Каталог</Link>
+            <Link href="/rent">Аренда</Link>
+            <Link href="/delivery">Доставка</Link>
+            <Link href="/warranty">Гарантия</Link>
+            <Link href="/about">О компании</Link>
+            <Link href="/contacts">Контакты</Link>
           </div>
         </div>
 

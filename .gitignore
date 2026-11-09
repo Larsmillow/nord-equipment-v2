@@ -12,3 +12,6 @@ pnpm-debug.log*
 *.exe
 *.winmd
 *.msi
+scratch/
+_backups/
+skill.zip

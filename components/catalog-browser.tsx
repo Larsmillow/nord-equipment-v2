@@ -60,6 +60,64 @@ function bounds(products: Product[], metric: "flow" | "power" | "pressure" | "pr
   };
 }
 
+function getTierNumber(product: Product): number {
+  const feats = product.features || [];
+  if (feats.includes("Tier 1")) return 1;
+  if (feats.includes("Tier 2")) return 2;
+  if (feats.includes("Tier 3")) return 3;
+  if (feats.includes("Tier 4")) return 4;
+  if (feats.includes("Tier 5")) return 5;
+  const f = product.flow_lpm ?? 4;
+  if (f <= 3) return 1;
+  if (f <= 4.8) return 2;
+  if (f <= 8.2) return 3;
+  if (f <= 13) return 4;
+  return 5;
+}
+
+const TASK_PRESETS = [
+  {
+    tier: 1,
+    badge: "ЗАДАЧА 01",
+    title: "Квартиры и финиш Q4",
+    spec: "2,5 л/мин · до 0.023″",
+    color: "#0d9488",
+    image: "/assets/machines/nord-2500/NORD-2500-view-front-3q-nord-edit-2k.jpg",
+  },
+  {
+    tier: 2,
+    badge: "ЗАДАЧА 02",
+    title: "Фасады и металл",
+    spec: "4,2 л/мин · до 0.033″",
+    color: "#0284c7",
+    image: "/assets/machines/nord-4500/NORD-4500-view-front-3q-nord-edit.jpg",
+  },
+  {
+    tier: 3,
+    badge: "ЗАДАЧА 03",
+    title: "Шпаклёвка + 2 поста",
+    spec: "6,5 л/мин · до 0.041″",
+    color: "#1d4ed8",
+    image: "/assets/machines/nord-6000/NORD-6000-view-3q-a-source.jpg",
+  },
+  {
+    tier: 4,
+    badge: "ЗАДАЧА 04",
+    title: "Огнезащита 350 бар",
+    spec: "7,5 л/мин · 350 бар",
+    color: "#1e3a8a",
+    image: "/assets/machines/nord-8000-pro/NORD-8000-view-front-3q-source.jpg",
+  },
+  {
+    tier: 5,
+    badge: "ЗАДАЧА 05",
+    title: "Шнековый 18 л/мин",
+    spec: "18,0 л/мин · бункер",
+    color: "#b45309",
+    image: "/assets/machines/nord-18x/NORD-18X-view-front-3q-a.jpg",
+  },
+];
+
 export function CatalogBrowser({
   products,
   categories,
@@ -75,6 +133,8 @@ export function CatalogBrowser({
   const [manufacturer, setManufacturer] = useState("");
   const [drive, setDrive] = useState("");
   const [category, setCategory] = useState(categorySlug || "");
+  const [tierFilter, setTierFilter] = useState<number>(0);
+  const [sortOrder, setSortOrder] = useState<"power-asc" | "power-desc" | "price-asc">("power-asc");
   const [minFlow, setMinFlow] = useState("");
   const [maxFlow, setMaxFlow] = useState("");
   const [minPower, setMinPower] = useState("");
@@ -85,55 +145,73 @@ export function CatalogBrowser({
   const [maxPrice, setMaxPrice] = useState("");
   const [quickReel, setQuickReel] = useState(false);
 
-  const manufacturers = useMemo(
-    () => [...new Set(products.map((product) => product.manufacturer).filter(Boolean))].sort(),
-    [products],
-  );
+  const visible = useMemo(() => {
+    const filtered = products.filter((product) => {
+      const query = search.trim().toLocaleLowerCase("ru");
+      const text = `${product.name} ${product.model} ${product.manufacturer} ${product.description}`.toLocaleLowerCase("ru");
+      const flow = metricValues(product, "flow");
+      const power = metricValues(product, "power");
+      const pressure = metricValues(product, "pressure");
+      const price = metricValues(product, "price");
+      const tNum = getTierNumber(product);
+      return (
+        (!query || text.includes(query)) &&
+        (!manufacturer || product.manufacturer === manufacturer) &&
+        (!drive || product.drive === drive || (drive === "electric" && product.drive === "multi")) &&
+        (!category || product.category_slug === category) &&
+        (!tierFilter || tNum === tierFilter) &&
+        ((!minFlow && !maxFlow) ||
+          flow.some((value) => (!minFlow || value >= Number(minFlow)) && (!maxFlow || value <= Number(maxFlow)))) &&
+        ((!minPower && !maxPower) ||
+          power.some((value) => (!minPower || value >= Number(minPower)) && (!maxPower || value <= Number(maxPower)))) &&
+        ((!minPressure && !maxPressure) ||
+          pressure.some(
+            (value) => (!minPressure || value >= Number(minPressure)) && (!maxPressure || value <= Number(maxPressure)),
+          )) &&
+        ((!minPrice && !maxPrice) ||
+          price.some((value) => (!minPrice || value >= Number(minPrice)) && (!maxPrice || value <= Number(maxPrice)))) &&
+        (!quickReel || product.features.some((feature) => feature.toLocaleLowerCase("ru").includes("quickreel")))
+      );
+    });
 
-  const visible = useMemo(
-    () =>
-      products.filter((product) => {
-        const query = search.trim().toLocaleLowerCase("ru");
-        const text = `${product.name} ${product.model} ${product.manufacturer} ${product.description}`.toLocaleLowerCase("ru");
-        const flow = metricValues(product, "flow");
-        const power = metricValues(product, "power");
-        const pressure = metricValues(product, "pressure");
-        const price = metricValues(product, "price");
-        return (
-          (!query || text.includes(query)) &&
-          (!manufacturer || product.manufacturer === manufacturer) &&
-          (!drive || product.drive === drive || (drive === "electric" && product.drive === "multi")) &&
-          (!category || product.category_slug === category) &&
-          ((!minFlow && !maxFlow) ||
-            flow.some((value) => (!minFlow || value >= Number(minFlow)) && (!maxFlow || value <= Number(maxFlow)))) &&
-          ((!minPower && !maxPower) ||
-            power.some((value) => (!minPower || value >= Number(minPower)) && (!maxPower || value <= Number(maxPower)))) &&
-          ((!minPressure && !maxPressure) ||
-            pressure.some(
-              (value) => (!minPressure || value >= Number(minPressure)) && (!maxPressure || value <= Number(maxPressure)),
-            )) &&
-          ((!minPrice && !maxPrice) ||
-            price.some((value) => (!minPrice || value >= Number(minPrice)) && (!maxPrice || value <= Number(maxPrice)))) &&
-          (!quickReel || product.features.some((feature) => feature.toLocaleLowerCase("ru").includes("quickreel")))
-        );
-      }),
-    [
-      products,
-      search,
-      manufacturer,
-      drive,
-      category,
-      minFlow,
-      maxFlow,
-      minPower,
-      maxPower,
-      minPressure,
-      maxPressure,
-      minPrice,
-      maxPrice,
-      quickReel,
-    ],
-  );
+    return [...filtered].sort((a, b) => {
+      const tierA = getTierNumber(a);
+      const tierB = getTierNumber(b);
+      const priceA = a.purchase_price ?? 999999;
+      const priceB = b.purchase_price ?? 999999;
+      const flowA = a.flow_lpm ?? 0;
+      const flowB = b.flow_lpm ?? 0;
+
+      if (sortOrder === "power-asc") {
+        if (tierA !== tierB) return tierA - tierB;
+        if (flowA !== flowB) return flowA - flowB;
+        return priceA - priceB;
+      }
+      if (sortOrder === "power-desc") {
+        if (tierA !== tierB) return tierB - tierA;
+        if (flowA !== flowB) return flowB - flowA;
+        return priceB - priceA;
+      }
+      return priceA - priceB;
+    });
+  }, [
+    products,
+    search,
+    manufacturer,
+    drive,
+    category,
+    tierFilter,
+    sortOrder,
+    minFlow,
+    maxFlow,
+    minPower,
+    maxPower,
+    minPressure,
+    maxPressure,
+    minPrice,
+    maxPrice,
+    quickReel,
+  ]);
 
   const flow = bounds(products, "flow");
   const power = bounds(products, "power");
@@ -145,6 +223,7 @@ export function CatalogBrowser({
     setManufacturer("");
     setDrive("");
     setCategory(categorySlug || "");
+    setTierFilter(0);
     setMinFlow("");
     setMaxFlow("");
     setMinPower("");
@@ -158,84 +237,82 @@ export function CatalogBrowser({
 
   return (
     <div className="catalog-engine">
-      {/* Quick task presets */}
-      <div className="catalog-presets">
-        <span className="preset-label">Быстрый фильтр по задаче:</span>
+      {/* Studio 5-Task Visual Filter Rail (Clean Industrial Design, Zero Cartoon Emojis) */}
+      <div className="catalog-task-strip" role="group" aria-label="Быстрый фильтр по задаче">
         <button
           type="button"
-          className={`preset-chip${category === "" && !minFlow && !quickReel ? " is-active" : ""}`}
+          className={`catalog-task-card catalog-task-card--all${tierFilter === 0 && category === (categorySlug || "") && !minFlow && !quickReel ? " is-active" : ""}`}
           onClick={resetAll}
         >
-          Все модели ({products.length})
+          <span className="ctc-badge">ВЕСЬ ПАРК</span>
+          <strong className="ctc-title">Все задачи ({products.length})</strong>
+          <span className="ctc-spec">2,5 – 50 л/мин · 200–350 бар</span>
         </button>
-        <button
-          type="button"
-          className={`preset-chip${category === "painting" && maxFlow === "5" ? " is-active" : ""}`}
-          onClick={() => {
-            resetAll();
-            setCategory("painting");
-            setMaxFlow("5");
-          }}
-        >
-          Окраска до 5 л/мин
-        </button>
-        <button
-          type="button"
-          className={`preset-chip${minFlow === "6" && category === "" ? " is-active" : ""}`}
-          onClick={() => {
-            resetAll();
-            setMinFlow("6");
-          }}
-        >
-          Высокая подача (от 6 л/мин)
-        </button>
-        <button
-          type="button"
-          className={`preset-chip${category === "putty" ? " is-active" : ""}`}
-          onClick={() => {
-            resetAll();
-            setCategory("putty");
-          }}
-        >
-          Под шпаклёвку
-        </button>
-        <button
-          type="button"
-          className={`preset-chip${category === "fire" ? " is-active" : ""}`}
-          onClick={() => {
-            resetAll();
-            setCategory("fire");
-          }}
-        >
-          Под огнезащиту
-        </button>
-        <button
-          type="button"
-          className={`preset-chip${quickReel ? " is-active" : ""}`}
-          onClick={() => {
-            resetAll();
-            setQuickReel(true);
-          }}
-        >
-          С барабаном QuickReel
-        </button>
+
+        {TASK_PRESETS.map((preset) => {
+          const isActive = tierFilter === preset.tier;
+          return (
+            <button
+              key={preset.tier}
+              type="button"
+              className={`catalog-task-card${isActive ? " is-active" : ""}`}
+              style={{ "--task-accent": preset.color } as React.CSSProperties}
+              onClick={() => {
+                if (isActive) {
+                  setTierFilter(0);
+                } else {
+                  setTierFilter(preset.tier);
+                }
+              }}
+            >
+              <div className="ctc-head">
+                <span className="ctc-badge" style={{ background: preset.color, color: "#fff" }}>
+                  {preset.badge}
+                </span>
+                <div className="ctc-thumb">
+                  <img
+                    src={preset.image}
+                    alt={preset.title}
+                    onError={(e) => {
+                      e.currentTarget.src = "/assets/site/nord-station-1095-cutout.png";
+                    }}
+                  />
+                </div>
+              </div>
+              <strong className="ctc-title">{preset.title}</strong>
+              <span className="ctc-spec">{preset.spec}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="catalog-toolbar">
         <label className="form-field">
-          <span>Поиск по модели или артикулу</span>
+          <span>Поиск по модели или составу</span>
           <input
             className="form-control"
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Например: GTB-1095, PT-9528-X…"
+            placeholder="Например: NORD-2500, NORD-6000, 18X, шпаклёвка…"
           />
         </label>
         <label className="form-field">
-          <span>Направление работ</span>
+          <span>Порядок ранжирования</span>
+          <select
+            className="form-control"
+            value={sortOrder}
+            onChange={(event) => setSortOrder(event.target.value as "power-asc" | "power-desc" | "price-asc")}
+          >
+            <option value="power-asc">По возрастанию подачи (2,5 → 50 л/мин)</option>
+            <option value="power-desc">От старших флагманов (50 → 2,5 л/мин)</option>
+            <option value="price-asc">По возрастанию стоимости</option>
+          </select>
+        </label>
+        <label className="form-field">
+          <span>Раздел оборудования</span>
           <select className="form-control" value={category} onChange={(event) => setCategory(event.target.value)}>
-            <option value="">Все направления</option>
+            <option value="">Все разделы каталога</option>
             {categories.map((item) => (
               <option key={item.slug} value={item.slug}>
                 {item.name}
@@ -244,29 +321,18 @@ export function CatalogBrowser({
           </select>
         </label>
         <label className="form-field">
-          <span>Завод-производитель</span>
-          <select className="form-control" value={manufacturer} onChange={(event) => setManufacturer(event.target.value)}>
-            <option value="">Все бренды</option>
-            {manufacturers.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="form-field">
-          <span>Тип привода</span>
+          <span>Тип силовой установки</span>
           <select className="form-control" value={drive} onChange={(event) => setDrive(event.target.value)}>
             <option value="">Любой привод</option>
-            <option value="electric">Электрический (220/380В)</option>
+            <option value="electric">Электрический (220 / 380 В)</option>
             <option value="pneumatic">Пневматический</option>
-            <option value="multi">Автономный / ДВС</option>
+            <option value="multi">Автономный бензиновый ДВС</option>
           </select>
         </label>
       </div>
 
       <details className="filter-panel">
-        <summary>Инженерный фильтр по ТТХ (Подача л/мин · Мощность Вт · Давление бар · Цена)</summary>
+        <summary>Точный инженерный фильтр по ТТХ (Подача л/мин · Мощность Вт · Давление бар · Бюджет)</summary>
         <div className="filter-grid-advanced">
           <label className="form-field">
             <span>Подача от, л/мин (мин. {flow.min})</span>
@@ -376,7 +442,7 @@ export function CatalogBrowser({
         <div className="filter-panel-footer">
           <label className="filter-checkbox">
             <input type="checkbox" checked={quickReel} onChange={(event) => setQuickReel(event.target.checked)} />
-            <span>Только модели с интегрированным барабаном QuickReel</span>
+            <span>Только станции с интегрированным барабаном QuickReel</span>
           </label>
           <button className="button button-outline" type="button" onClick={resetAll}>
             Сбросить параметры
@@ -386,9 +452,29 @@ export function CatalogBrowser({
 
       <div className="catalog-status-bar" aria-live="polite">
         <span>
-          Отображено позиций: <strong>{visible.length}</strong> из {products.length}
+          Найдено станций: <strong>{visible.length}</strong> из {products.length} · Сортировка:{" "}
+          <strong>
+            {sortOrder === "power-asc"
+              ? "По возрастанию подачи (от 2,5 л/мин)"
+              : sortOrder === "power-desc"
+                ? "От старших флагманов"
+                : "По стоимости"}
+          </strong>
         </span>
-        {(search || manufacturer || drive || (category && category !== categorySlug) || minFlow || maxFlow || minPower || maxPower || minPressure || maxPressure || minPrice || maxPrice || quickReel) && (
+        {(search ||
+          manufacturer ||
+          drive ||
+          tierFilter !== 0 ||
+          (category && category !== categorySlug) ||
+          minFlow ||
+          maxFlow ||
+          minPower ||
+          maxPower ||
+          minPressure ||
+          maxPressure ||
+          minPrice ||
+          maxPrice ||
+          quickReel) && (
           <button type="button" className="text-button" onClick={resetAll}>
             Сбросить все фильтры ×
           </button>
@@ -403,10 +489,10 @@ export function CatalogBrowser({
         </div>
       ) : (
         <div className="empty-state">
-          <h3>По заданным техническим параметрам аппараты не найдены</h3>
-          <p>Сбросьте ограничения фильтра или поручите подбор инженеру NORD под ваш материал.</p>
+          <h3>По заданным техническим параметрам станции не найдены</h3>
+          <p>Сбросьте ограничения фильтра или поручите подбор дежурному инженеру NORD под ваш состав.</p>
           <button className="button button-primary" type="button" onClick={resetAll}>
-            Показать все модели
+            Показать все станции
           </button>
         </div>
       )}

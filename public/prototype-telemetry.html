@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NORD AIRLESS — Prototype: Hydro-Ballistic Telemetry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nord-bg-base: #070A0F;
+      --nord-bg-panel: #0D121A;
+      --nord-blue-core: #0095D9;
+      --nord-cyan-glow: #38BDF8;
+      --nord-font-mono: 'IBM Plex Mono', monospace;
+      --nord-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--nord-bg-base);
+      color: #F1F5F9;
+      font-family: var(--nord-font-sans);
+      padding: 32px 24px;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 149, 217, 0.12) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+    }
+
+    .wrapper {
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+
+    /* HEADER BANNER */
+    .brand-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 12px;
+      background: rgba(0, 149, 217, 0.1);
+      border: 1px solid rgba(0, 149, 217, 0.35);
+      border-radius: 2px;
+      font-family: var(--nord-font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--nord-cyan-glow);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .brand-kicker::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: var(--nord-blue-core);
+      box-shadow: 0 0 8px var(--nord-cyan-glow);
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+      color: #FFFFFF;
+    }
+
+    h1 span {
+      color: #94A3B8;
+      font-weight: 500;
+    }
+
+    .sublead {
+      color: #94A3B8;
+      font-size: 15px;
+      max-width: 760px;
+      margin-bottom: 32px;
+    }
+
+    /* SECTION TITLE BAR WITH TICK MARKS */
+    .telemetry-bar-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1E293B;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .telemetry-bar-title span {
+      font-family: var(--nord-font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #64748B;
+      text-transform: uppercase;
+    }
+
+    .telemetry-bar-title strong {
+      font-family: var(--nord-font-mono);
+      font-size: 12px;
+      color: var(--nord-cyan-glow);
+    }
+
+    /* 5 TASK SELECTORS GRID (THE NEW METALLURGICAL LADDER) */
+    .task-rail {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .nord-task-selector {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 14px 14px 16px;
+      background: var(--task-bg, #14181F);
+      border: 1px solid var(--task-border, #262D3A);
+      border-left: 3px solid var(--task-accent, #94A3B8);
+      border-radius: 2px;
+      color: #F1F5F9;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    /* Фрезерованная фаска */
+    .nord-task-selector::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(225deg, var(--task-border) 50%, transparent 50%);
+    }
+
+    .nord-task-index-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--nord-font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--task-accent);
+    }
+
+    .load-bar {
+      font-family: var(--nord-font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--task-accent);
+      opacity: 0.85;
+    }
+
+    .nord-task-machine {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .nord-task-thumb {
+      width: 48px;
+      height: 48px;
+      background: radial-gradient(circle, #1E293B 0%, #0D131D 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 2px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .nord-task-thumb img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
+    .nord-task-meta strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.01em;
+    }
+
+    .nord-task-meta span {
+      display: block;
+      font-family: var(--nord-font-mono);
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    .nord-task-price {
+      font-family: var(--nord-font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #F8FAFC;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .nord-task-price span {
+      color: #64748B;
+      font-weight: 500;
+    }
+
+    /* 5 КЛАССОВ НАГРУЖЕНИЯ */
+    .nord-task--t1 { --task-bg: #0E131A; --task-border: #1E2633; --task-accent: #94A3B8; }
+    .nord-task--t2 { --task-bg: #0C1522; --task-border: #1A2E47; --task-accent: #38BDF8; }
+    .nord-task--t3 { --task-bg: #0A1629; --task-border: #183C6C; --task-accent: #0095D9; }
+    .nord-task--t4 { 
+      --task-bg: #0A111D; 
+      --task-border: #23487F; 
+      --task-accent: #60A5FA;
+      background-image: radial-gradient(rgba(96, 165, 250, 0.08) 1px, transparent 0);
+      background-size: 12px 12px;
+    }
+    .nord-task--t5 { 
+      --task-bg: #141113; 
+      --task-border: #4D2E19; 
+      --task-accent: #E07A22; /* 350 BAR Медь */
+    }
+
+    .nord-task-selector:hover,
+    .nord-task-selector.is-active {
+      border-color: var(--task-accent);
+      background-color: #121D2C;
+      box-shadow: inset 4px 0 0 var(--task-accent), 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* MAIN STAGE 2-COLUMN (STUDIO MACHINE + METAL PASSPORT PLATE) */
+    .stage-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* LEFT: INDUSTRIAL MACHINE PODIUM */
+    .podium-box {
+      background: var(--nord-bg-panel);
+      border: 1px solid #1E293B;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+      box-shadow: inset 0 0 80px rgba(0, 149, 217, 0.06);
+    }
+
+    /* Калибровочная шкала на левой грани подиума */
+    .podium-box::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 14px;
+      background-image: repeating-linear-gradient(
+        0deg,
+        #1E293B,
+        #1E293B 1px,
+        transparent 1px,
+        transparent 10px
+      );
+    }
+
+    .podium-watermark {
+      position: absolute;
+      bottom: 12px;
+      right: 16px;
+      font-family: var(--nord-font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+    }
+
+    .machine-visual {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 380px;
+      height: 340px;
+      display: grid;
+      place-items: center;
+    }
+
+    .machine-visual img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.7));
+    }
+
+    /* FLOATING HUD CALLOUTS (Вместо эмодзи) */
+    .hud-callout {
+      position: absolute;
+      z-index: 3;
+      background: rgba(13, 18, 26, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid #2A384C;
+      border-radius: 2px;
+      padding: 7px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .hud-callout-tl { top: 20px; left: 24px; }
+    .hud-callout-tr { top: 20px; right: 24px; }
+
+    .hud-label {
+      font-family: var(--nord-font-mono);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hud-value {
+      font-family: var(--nord-font-mono);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    /* RIGHT: METAL SPECIFICATION PASSPORT (СТАНКОСТРОИТЕЛЬНЫЙ ШИЛЬДИК) */
+    .passport-plate {
+      background: var(--nord-bg-panel);
+      border: 1px solid #1E293B;
+      border-radius: 2px;
+      position: relative;
+      padding: 24px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    /* 4 имитации угловых заводских заклёпок */
+    .plate-rivet {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #334155;
+      border-radius: 50%;
+      box-shadow: inset 0 1px 1px #000, 0 1px 1px rgba(255, 255, 255, 0.15);
+    }
+    .rivet-tl { top: 8px; left: 8px; }
+    .rivet-tr { top: 8px; right: 8px; }
+    .rivet-bl { bottom: 8px; left: 8px; }
+    .rivet-br { bottom: 8px; right: 8px; }
+
+    .plate-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #1E293B;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .plate-model-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 8px;
+      background: rgba(0, 149, 217, 0.12);
+      border: 1px solid rgba(0, 149, 217, 0.4);
+      color: var(--nord-cyan-glow);
+      font-family: var(--nord-font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .plate-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+
+    .plate-price-box {
+      text-align: right;
+      font-family: var(--nord-font-mono);
+    }
+
+    .plate-price-label {
+      font-size: 9.5px;
+      color: #64748B;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .plate-price-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .plate-desc {
+      color: #94A3B8;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* ТЕЛЕМЕТРИЧЕСКАЯ ТАБЛИЦА (4 РАБОЧИХ УЗЛА) */
+    .telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .telemetry-cell {
+      background: #090D13;
+      border: 1px solid #1A2433;
+      border-radius: 2px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .telemetry-cell-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748B;
+      font-family: var(--nord-font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .telemetry-cell-head svg {
+      color: var(--nord-cyan-glow);
+      flex-shrink: 0;
+    }
+
+    .telemetry-cell-val {
+      font-family: var(--nord-font-mono);
+      font-size: 17px;
+      font-weight: 800;
+      color: #FFFFFF;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .telemetry-cell-sub {
+      font-size: 11px;
+      color: #94A3B8;
+    }
+
+    /* МАТРИЦА СОВМЕСТИМОСТИ СОСТАВОВ */
+    .passport-materials {
+      background: #090D13;
+      border: 1px solid #1A2433;
+      border-radius: 2px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .passport-materials-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--nord-font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: #64748B;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      border-bottom: 1px dashed #1E293B;
+      padding-bottom: 6px;
+    }
+
+    .materials-pills {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .mat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #CBD5E1;
+    }
+
+    .mat-marker {
+      width: 4px;
+      height: 4px;
+      background: var(--nord-blue-core);
+      box-shadow: 0 0 6px var(--nord-cyan-glow);
+      flex-shrink: 0;
+    }
+
+    .passport-scope {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed #1E293B;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: #94A3B8;
+    }
+
+    .passport-scope svg {
+      color: #38BDF8;
+      flex-shrink: 0;
+    }
+
+    .passport-scope strong {
+      color: #E2E8F0;
+    }
+
+    /* ACTION BAR (ИНЖЕНЕРНЫЙ ПЕРЕХОД) */
+    .passport-actions {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 12px;
+    }
+
+    .btn-nord-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--nord-blue-core);
+      border: 1px solid #38BDF8;
+      border-radius: 2px;
+      color: #FFFFFF;
+      font-family: var(--nord-font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-nord-primary:hover {
+      background: #0284c7;
+      box-shadow: 0 0 20px rgba(0, 149, 217, 0.4);
+    }
+
+    .btn-nord-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 18px;
+      background: #111722;
+      border: 1px solid #22344D;
+      border-radius: 2px;
+      color: #94A3B8;
+      font-family: var(--nord-font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-nord-secondary:hover {
+      color: #FFFFFF;
+      border-color: #38BDF8;
+      background: #162233;
+    }
+
+    .chevron-icon {
+      font-weight: 900;
+      letter-spacing: -2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wrapper">
+    <!-- Top kicker -->
+    <div class="brand-kicker">NORD AIRLESS ENGINEERING · 200–350 BAR · МОСКВА</div>
+
+    <h1>
+      Станции безвоздушного распыления <span>под вязкость и регламент работ</span>
+    </h1>
+    <p class="sublead">
+      Технологическая классификация поршневых станций: калибровка по проходному сечению сопла, гидравлической подаче свободного потока (Q) и рабочему давлению.
+    </p>
+
+    <!-- SECTION TITLE -->
+    <div class="telemetry-bar-title">
+      <span>SYS // РЕГЛАМЕНТ РАБОТ · 5 КЛАССОВ НАГРУЖЕНИЯ</span>
+      <strong>[ ■ ■ ■ □ □ ] КЛАСС 03 АКТИВЕН</strong>
+    </div>
+
+    <!-- 1. THE 5-TASK SELECTOR RAIL (NO MORE RAINBOW / NO EMOJIS) -->
+    <div class="task-rail">
+      <!-- TASK 1 -->
+      <div class="nord-task-selector nord-task--t1">
+        <div class="nord-task-index-row">
+          <span>РЕЖИМ 01 // ИНТЕРЬЕР Q4</span>
+          <span class="load-bar">[■□□□□]</span>
+        </div>
+        <div class="nord-task-machine">
+          <div class="nord-task-thumb">
+            <img src="/assets/products/nord-line/nord-595.jpg" alt="NORD 595">
+          </div>
+          <div class="nord-task-meta">
+            <strong>NORD 595 Pro</strong>
+            <span>Q: 2,5 л/мин · 0.021″</span>
+          </div>
+        </div>
+        <div class="nord-task-price">
+          <span>С НДС / СУТ:</span>
+          <strong>54 900 ₽ / 1 500 ₽</strong>
+        </div>
+      </div>
+
+      <!-- TASK 2 -->
+      <div class="nord-task-selector nord-task--t2">
+        <div class="nord-task-index-row">
+          <span>РЕЖИМ 02 // ФАСАДЫ И МЕТАЛЛ</span>
+          <span class="load-bar">[■■□□□]</span>
+        </div>
+        <div class="nord-task-machine">
+          <div class="nord-task-thumb">
+            <img src="/assets/products/nord-line/nord-795s.jpg" alt="NORD 795">
+          </div>
+          <div class="nord-task-meta">
+            <strong>NORD 795S</strong>
+            <span>Q: 4,0 л/мин · 0.031″</span>
+          </div>
+        </div>
+        <div class="nord-task-price">
+          <span>С НДС / СУТ:</span>
+          <strong>78 500 ₽ / 1 800 ₽</strong>
+        </div>
+      </div>
+
+      <!-- TASK 3 (ACTIVE) -->
+      <div class="nord-task-selector nord-task--t3 is-active">
+        <div class="nord-task-index-row">
+          <span>РЕЖИМ 03 // ШПАКЛЁВКА + 2 ПОСТА</span>
+          <span class="load-bar">[■■■□□]</span>
+        </div>
+        <div class="nord-task-machine">
+          <div class="nord-task-thumb">
+            <img src="/assets/products/nord-line/nord-1095.jpg" alt="NORD 1095">
+          </div>
+          <div class="nord-task-meta">
+            <strong>NORD 1095 HD</strong>
+            <span>Q: 6,0 л/мин · 0.043″</span>
+          </div>
+        </div>
+        <div class="nord-task-price">
+          <span>С НДС / СУТ:</span>
+          <strong>97 375 ₽ / 2 000 ₽</strong>
+        </div>
+      </div>
+
+      <!-- TASK 4 -->
+      <div class="nord-task-selector nord-task--t4">
+        <div class="nord-task-index-row">
+          <span>РЕЖИМ 04 // МЕХАНИЗАЦИЯ ЖК</span>
+          <span class="load-bar">[■■■■□]</span>
+        </div>
+        <div class="nord-task-machine">
+          <div class="nord-task-thumb">
+            <img src="/assets/products/nord-line/nord-9528x-studio.jpg" alt="NORD 9528">
+          </div>
+          <div class="nord-task-meta">
+            <strong>NORD 9528-X</strong>
+            <span>Q: 10,5 л/мин · 0.045″</span>
+          </div>
+        </div>
+        <div class="nord-task-price">
+          <span>С НДС / СУТ:</span>
+          <strong>170 000 ₽ / 2 500 ₽</strong>
+        </div>
+      </div>
+
+      <!-- TASK 5 -->
+      <div class="nord-task-selector nord-task--t5">
+        <div class="nord-task-index-row">
+          <span>РЕЖИМ 05 // ОГНЕЗАЩИТА · ПРОМ</span>
+          <span class="load-bar">[■■■■■]</span>
+        </div>
+        <div class="nord-task-machine">
+          <div class="nord-task-thumb">
+            <img src="/assets/products/nord-line/nord-9535.jpg" alt="NORD 9535">
+          </div>
+          <div class="nord-task-meta">
+            <strong>NORD 9536 Pro</strong>
+            <span>Q: 18,0 л/мин · 350 бар</span>
+          </div>
+        </div>
+        <div class="nord-task-price">
+          <span>С НДС / СУТ:</span>
+          <strong>198 000 ₽ / 3 000 ₽</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MAIN STAGE (STUDIO PODIUM + METAL TELEMETRY PLATE) -->
+    <div class="stage-grid">
+      <!-- PODIUM -->
+      <div class="podium-box">
+        <!-- Floating HUD Tag 1 -->
+        <div class="hud-callout hud-callout-tl">
+          <span class="hud-label">
+            <!-- Глиф площади ISO -->
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="12" height="12" />
+              <path d="M3 15L15 3" stroke-dasharray="2 2" />
+            </svg>
+            НОРМА ВЫРАБОТКИ // 8Ч
+          </span>
+          <span class="hud-value">до 1 500 м² (WFT 400 мкм)</span>
+        </div>
+
+        <!-- Floating HUD Tag 2 -->
+        <div class="hud-callout hud-callout-tr">
+          <span class="hud-label">
+            <!-- Глиф гидропотока -->
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+              <line x1="1" y1="9" x2="17" y2="9" />
+              <path d="M5 4C7.5 6.5 10.5 6.5 13 4" />
+              <path d="M5 14C7.5 11.5 10.5 11.5 13 14" />
+            </svg>
+            РЕЖИМ ПОСТОВ
+          </span>
+          <span class="hud-value">2 поста одновременно</span>
+        </div>
+
+        <div class="machine-visual">
+          <img src="/assets/products/nord-line/nord-1095.jpg" alt="NORD 1095 HD Airless Station">
+        </div>
+
+        <div class="podium-watermark">
+          NORD AIRLESS // HYDRO-BALLISTIC TEST STAND // 230 BAR
+        </div>
+      </div>
+
+      <!-- PASSPORT PLATE -->
+      <div class="passport-plate">
+        <!-- 4 Rivets -->
+        <div class="plate-rivet rivet-tl"></div>
+        <div class="plate-rivet rivet-tr"></div>
+        <div class="plate-rivet rivet-bl"></div>
+        <div class="plate-rivet rivet-br"></div>
+
+        <div class="plate-header">
+          <div>
+            <div class="plate-model-badge">ТЕХНИЧЕСКИЙ ПАСПОРТ УЗЛА // РЕЖИМ 03</div>
+            <div class="plate-title">Станция NORD 1095 HD</div>
+          </div>
+          <div class="plate-price-box">
+            <span class="plate-price-label">СТОИМОСТЬ С НДС 20%:</span>
+            <div class="plate-price-val">97 375 ₽</div>
+            <span class="plate-price-label" style="margin-top:2px;">АРЕНДА: 2 000 ₽ / СУТ</span>
+          </div>
+        </div>
+
+        <p class="plate-desc">
+          Профессиональный агрегат высокого давления (3 500 Вт, 6,0 л/мин) на цельносварной колесной раме. Инженерная база под механизированное нанесение готовых полимерных шпаклёвок и одновременную работу 2 малярных постов.
+        </p>
+
+        <!-- 4 TELEMETRY CELLS (WITH EXACT ISO GLYPHS INSTEAD OF EMOJIS) -->
+        <div class="telemetry-grid">
+          <!-- CELL 1: Q FLOW -->
+          <div class="telemetry-cell">
+            <div class="telemetry-cell-head">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                <line x1="1" y1="9" x2="17" y2="9" />
+                <path d="M5 4C7.5 6.5 10.5 6.5 13 4" />
+                <path d="M5 14C7.5 11.5 10.5 11.5 13 14" />
+              </svg>
+              <span>Q // ПОДАЧА НАСОСА</span>
+            </div>
+            <div class="telemetry-cell-val">6,0 л/мин</div>
+            <div class="telemetry-cell-sub">Свободный поток (Free Flow)</div>
+          </div>
+
+          <!-- CELL 2: P PRESSURE -->
+          <div class="telemetry-cell">
+            <div class="telemetry-cell-head">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3.5 13.5A7 7 0 1 1 14.5 13.5" />
+                <line x1="9" y1="10" x2="13.5" y2="5.5" />
+                <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+              </svg>
+              <span>P // РАБОЧЕЕ ДАВЛЕНИЕ</span>
+            </div>
+            <div class="telemetry-cell-val">230 бар</div>
+            <div class="telemetry-cell-sub">Электронный регулятор SmartControl</div>
+          </div>
+
+          <!-- CELL 3: TIP NOZZLE -->
+          <div class="telemetry-cell">
+            <div class="telemetry-cell-head">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M2 7H5V11H2V7Z" />
+                <path d="M5 9L15 3V15L5 9Z" />
+                <line x1="11" y1="5.5" x2="11" y2="12.5" stroke-dasharray="1.5 1.5" />
+              </svg>
+              <span>Ø // КАЛИБР СОПЛА (MAX)</span>
+            </div>
+            <div class="telemetry-cell-val">до 0.043″</div>
+            <div class="telemetry-cell-sub">1 пост: 0.043″ / 2 поста: 0.025″</div>
+          </div>
+
+          <!-- CELL 4: DRV MOTOR -->
+          <div class="telemetry-cell">
+            <div class="telemetry-cell-head">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="4" width="10" height="10" />
+                <line x1="1" y1="9" x2="4" y2="9" />
+                <line x1="14" y1="9" x2="17" y2="9" />
+                <path d="M7 11V7L11 11V7" />
+              </svg>
+              <span>DRV // СИЛОВОЙ ПРИВОД</span>
+            </div>
+            <div class="telemetry-cell-val">3 500 Вт</div>
+            <div class="telemetry-cell-sub">Бесщёточный DC · S1 непрерывный</div>
+          </div>
+        </div>
+
+        <!-- COMPATIBILITY PASSPORT -->
+        <div class="passport-materials">
+          <div class="passport-materials-head">
+            <span>ДОПУСК ПО ВЯЗКОСТИ И МАТЕРИАЛАМ</span>
+            <span style="color:#38BDF8;">ТЕХКАРТА 1095-HD</span>
+          </div>
+          <div class="materials-pills">
+            <div class="mat-item"><span class="mat-marker"></span>Готовые полимерные пасты (Danogips, Semin)</div>
+            <div class="mat-item"><span class="mat-marker"></span>Интерьерные и фасадные краски в 2 поста</div>
+            <div class="mat-item"><span class="mat-marker"></span>Клеи под стеклохолст и флизелин</div>
+            <div class="mat-item"><span class="mat-marker"></span>Огнезащитные вспучивающиеся составы (ОГЗ)</div>
+          </div>
+          <div class="passport-scope">
+            <!-- Чертежная высотная отметка КЖ/КМ -->
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <line x1="1" y1="8" x2="15" y2="8" />
+              <path d="M8 8L4 14H12L8 8Z" fill="rgba(56,189,248,0.2)" />
+            </svg>
+            <span>ДОПУСК ПО ОБЪЕКТАМ: <strong>Многоэтажные ЖК (МОП / квартиры), ТРЦ, промплощадки 1 000–5 000 м²</strong></span>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="passport-actions">
+          <a href="#" class="btn-nord-primary">
+            <span>Запросить спецификацию с НДС</span>
+            <span class="chevron-icon">&gt;&gt;</span>
+          </a>
+          <a href="#" class="btn-nord-secondary">
+            <span>Стендовый тест 3D</span>
+            <span class="chevron-icon">&gt;&gt;</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

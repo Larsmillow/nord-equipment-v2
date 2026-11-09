@@ -3,8 +3,40 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Product } from "@/lib/catalog";
+import { ACCESSORIES_AND_SPARES } from "@/lib/spares-catalog";
 import { formatPrice, productImage } from "@/lib/product-utils";
 import { useStore } from "@/components/store-context";
+
+function spareToProduct(spareId: string): Product | undefined {
+  const s = ACCESSORIES_AND_SPARES.find((i) => i.id === spareId);
+  if (!s) return undefined;
+  return {
+    id: s.id,
+    name: s.name,
+    slug: s.id,
+    short_name: s.sku,
+    description: s.specSummary,
+    category_slug: "spares_accessories",
+    category_name: s.subCategoryLabel,
+    manufacturer: "NORD",
+    model: s.sku,
+    images: [{ src: "/assets/machines/nord-6000/NORD-6000-view-3q-a-source.jpg", alt: s.name }],
+    characteristics: [{ name: "Совместимость", value: s.compatibility }],
+    materials: s.compatibility,
+    purchase_price: s.priceRub,
+    rental_price_daily: null,
+    rental_min_days: 1,
+    stock_quantity: 20,
+    purchase_enabled: true,
+    rental_enabled: false,
+    published: true,
+    badge: s.badge || "ЗИП NORD",
+    source_url: null,
+    flow_lpm: null,
+    drive: "Оригинальный ЗИП",
+    features: [s.specSummary],
+  };
+}
 
 export function CartPage({ products }: { products: Product[] }) {
   const { mode, setMode, cart, addToCart, updateQuantity, removeFromCart, clearCart } = useStore();
@@ -20,7 +52,12 @@ export function CartPage({ products }: { products: Product[] }) {
     () =>
       cart
         .filter((line) => line.mode === mode)
-        .map((line) => ({ ...line, product: products.find((product) => product.id === line.productId) }))
+        .map((line) => ({
+          ...line,
+          product:
+            products.find((product) => product.id === line.productId) ||
+            spareToProduct(line.productId),
+        }))
         .filter((line): line is typeof line & { product: Product } => Boolean(line.product)),
     [cart, mode, products],
   );
