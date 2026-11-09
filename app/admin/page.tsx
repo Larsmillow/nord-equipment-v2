@@ -4,6 +4,60 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import "./admin-ios.css";
 
+// Фирменная векторная иконка Apple Face ID
+function AppleFaceIdIcon({
+  size = 28,
+  color = "#007aff",
+  isSuccess = false,
+}: {
+  size?: number;
+  color?: string;
+  isSuccess?: boolean;
+}) {
+  if (isSuccess) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#34c759"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M7 3H5a2 2 0 0 0-2 2v2" />
+        <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+        <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+        <path d="M3 17v2a2 2 0 0 0 2 2h2" />
+        <polyline points="8 12 11 15 16 9" stroke="#34c759" strokeWidth="2.6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2.1"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7 3H5a2 2 0 0 0-2 2v2" />
+      <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+      <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+      <path d="M3 17v2a2 2 0 0 0 2 2h2" />
+      <line x1="9" y1="9" x2="9" y2="10.5" strokeWidth="2.5" />
+      <line x1="15" y1="9" x2="15" y2="10.5" strokeWidth="2.5" />
+      <path d="M12 11v2a1 1 0 0 0 1 1h.5" />
+      <path d="M8 17a4.2 4.2 0 0 0 8 0" />
+    </svg>
+  );
+}
+
 export default function NordIosAdminPage() {
   const [db, setDb] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -15,6 +69,12 @@ export default function NordIosAdminPage() {
   const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [enteredPin, setEnteredPin] = useState<string>("");
   const [pinError, setPinError] = useState<boolean>(false);
+
+  // Биометрия Apple Face ID / Touch ID (WebAuthn API)
+  const [faceIdCredId, setFaceIdCredId] = useState<string | null>(null);
+  const [isBioSupported, setIsBioSupported] = useState<boolean>(false);
+  const [faceIdStatus, setFaceIdStatus] = useState<"idle" | "scanning" | "success" | "error">("idle");
+  const [faceIdToast, setFaceIdToast] = useState<string | null>(null);
 
   // Модальные шторки (iOS Bottom Sheets)
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
@@ -29,21 +89,43 @@ export default function NordIosAdminPage() {
   const [docAmountRub, setDocAmountRub] = useState(95000);
 
   useEffect(() => {
-    // Проверка сохранённой сессии входа
-    if (typeof window !== "undefined") {
-      if (sessionStorage.getItem("nord_admin_auth") === "true") {
-        setIsAuthenticated(true);
+    // Проверка сохранённой сессии входа и биометрии
+    const initAuth = async () => {
+      if (typeof window !== "undefined") {
+        const storedCred = localStorage.getItem("nord_faceid_cred_id");
+        if (storedCred) setFaceIdCredId(storedCred);
+        if (window.PublicKeyCredential) {
+          setIsBioSupported(true);
+        }
       }
-      setAuthChecked(true);
-    }
 
-    fetch("/api/admin/db")
-      .then((r) => r.json())
-      .then((data) => {
-        setDb(data);
+      try {
+        const authRes = await fetch("/api/admin/auth");
+        const authData = await authRes.json();
+        if (authData.authorized) {
+          setIsAuthenticated(true);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("nord_admin_auth", "true");
+          }
+        } else if (typeof window !== "undefined" && sessionStorage.getItem("nord_admin_auth") === "true") {
+          setIsAuthenticated(true);
+        }
+      } catch {}
+
+      try {
+        const dbRes = await fetch("/api/admin/db");
+        const dbData = await dbRes.json();
+        setDb(dbData);
+        if (dbData.authorized) {
+          setIsAuthenticated(true);
+        }
+      } catch {} finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+        setAuthChecked(true);
+      }
+    };
+
+    initAuth();
   }, []);
 
   // Слушатель ввода с клавиатуры на экране блокировки
@@ -60,20 +142,38 @@ export default function NordIosAdminPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isAuthenticated, enteredPin, db]);
 
-  const handlePinDigit = (digit: string) => {
+  const handlePinDigit = async (digit: string) => {
     if (enteredPin.length >= 4) return;
     const nextPin = enteredPin + digit;
     setEnteredPin(nextPin);
 
     if (nextPin.length === 4) {
-      const targetPin = String(db?.pinCode || "2026");
-      if (nextPin === targetPin) {
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("nord_admin_auth", "true");
+      try {
+        const res = await fetch("/api/admin/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "loginPin", pin: nextPin }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("nord_admin_auth", "true");
+          }
+          setIsAuthenticated(true);
+          setPinError(false);
+
+          // Загружаем полные закрытые данные (себестоимость, транзакции, реквизиты)
+          const fullRes = await fetch("/api/admin/db");
+          const fullDb = await fullRes.json();
+          setDb(fullDb);
+        } else {
+          setPinError(true);
+          setTimeout(() => {
+            setEnteredPin("");
+            setPinError(false);
+          }, 500);
         }
-        setIsAuthenticated(true);
-        setPinError(false);
-      } else {
+      } catch {
         setPinError(true);
         setTimeout(() => {
           setEnteredPin("");
@@ -87,22 +187,261 @@ export default function NordIosAdminPage() {
     setEnteredPin((prev) => prev.slice(0, -1));
   };
 
-  const handleLock = () => {
+  const handleLock = async () => {
+    try {
+      await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "logout" }),
+      });
+    } catch {}
+
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("nord_admin_auth");
     }
     setIsAuthenticated(false);
     setEnteredPin("");
+
+    // Очищаем локальные данные до безопасной публичной витрины
+    try {
+      const res = await fetch("/api/admin/db");
+      const safeDb = await res.json();
+      setDb(safeDb);
+    } catch {}
+  };
+
+  // ==========================================================================
+  // WEBAUTHN API: ПРИВЯЗКА APPLE FACE ID / TOUCH ID (registerFaceId)
+  // ==========================================================================
+  const registerFaceId = async () => {
+    if (typeof window === "undefined" || !window.PublicKeyCredential) {
+      alert("Apple Face ID / Touch ID не поддерживается на этом устройстве или в этом браузере.");
+      return;
+    }
+
+    try {
+      setFaceIdStatus("scanning");
+
+      // 1. Получаем подписанный вызов от сервера
+      const chalRes = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "getPasskeyRegisterChallenge" }),
+      });
+      const chalData = await chalRes.json();
+
+      let challengeBytes: Uint8Array;
+      if (chalData.ok && chalData.challenge) {
+        challengeBytes = Uint8Array.from(
+          window.atob(chalData.challenge.replace(/-/g, "+").replace(/_/g, "/")),
+          (c) => c.charCodeAt(0)
+        );
+      } else {
+        challengeBytes = new Uint8Array(32);
+        window.crypto.getRandomValues(challengeBytes);
+      }
+
+      const userId = new Uint8Array(16);
+      window.crypto.getRandomValues(userId);
+
+      const credential = (await navigator.credentials.create({
+        publicKey: {
+          challenge: challengeBytes as any,
+          rp: { name: "NORD Executive OS" },
+          user: {
+            id: userId as any,
+            name: "kurbanov@nord.ru",
+            displayName: "Курбанов Магомед Магомедович",
+          },
+          pubKeyCredParams: [
+            { type: "public-key" as const, alg: -7 },   // ES256
+            { type: "public-key" as const, alg: -257 }, // RS256
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform" as const,
+            userVerification: "required" as const,
+          },
+          timeout: 60000,
+        },
+      })) as PublicKeyCredential | null;
+
+      if (credential && credential.rawId) {
+        const rawIdBytes = new Uint8Array(credential.rawId);
+        let binary = "";
+        for (let i = 0; i < rawIdBytes.byteLength; i++) {
+          binary += String.fromCharCode(rawIdBytes[i]);
+        }
+        const credIdBase64 = window.btoa(binary);
+
+        // Регистрируем ключ на сервере
+        if (chalData.challenge && chalData.challengeToken) {
+          await fetch("/api/admin/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "registerPasskey",
+              credentialId: credIdBase64,
+              challenge: chalData.challenge,
+              challengeToken: chalData.challengeToken,
+              deviceName: "Apple Device (iPhone / Mac Face ID)",
+            }),
+          });
+        }
+
+        localStorage.setItem("nord_faceid_cred_id", credIdBase64);
+        setFaceIdCredId(credIdBase64);
+        setFaceIdStatus("success");
+
+        setTimeout(() => {
+          sessionStorage.setItem("nord_admin_auth", "true");
+          setIsAuthenticated(true);
+          setFaceIdStatus("idle");
+          setSavingToast("✓ Face ID успешно привязан к вашему устройству");
+          setTimeout(() => setSavingToast(null), 3500);
+        }, 500);
+      } else {
+        setFaceIdStatus("idle");
+      }
+    } catch (err: any) {
+      console.log("Face ID creation cancelled or not allowed:", err);
+      setFaceIdStatus("idle");
+    }
+  };
+
+  // ==========================================================================
+  // WEBAUTHN API: ВХОД ПО APPLE FACE ID / TOUCH ID (loginWithFaceId)
+  // ==========================================================================
+  const loginWithFaceId = async () => {
+    if (typeof window === "undefined" || !window.PublicKeyCredential) {
+      alert("Биометрия не поддерживается в этом браузере.");
+      return;
+    }
+
+    try {
+      setFaceIdStatus("scanning");
+
+      // 1. Получаем challenge от сервера
+      const chalRes = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "getPasskeyLoginChallenge" }),
+      });
+      const chalData = await chalRes.json();
+
+      if (!chalData.ok || !chalData.challenge) {
+        setFaceIdStatus("idle");
+        alert("Не удалось связаться с сервером биометрии");
+        return;
+      }
+
+      const chalBytes = Uint8Array.from(
+        window.atob(chalData.challenge.replace(/-/g, "+").replace(/_/g, "/")),
+        (c) => c.charCodeAt(0)
+      );
+
+      const storedCredId = localStorage.getItem("nord_faceid_cred_id");
+      let allowList: PublicKeyCredentialDescriptor[] | undefined = undefined;
+      const targetCredId = storedCredId || (chalData.allowedIds && chalData.allowedIds[0]);
+
+      if (targetCredId) {
+        try {
+          const bin = window.atob(targetCredId.replace(/-/g, "+").replace(/_/g, "/"));
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          allowList = [{ type: "public-key" as const, id: arr }];
+        } catch {}
+      }
+
+      const assertion = (await navigator.credentials.get({
+        publicKey: {
+          challenge: chalBytes as any,
+          userVerification: "required" as const,
+          timeout: 60000,
+          ...(allowList ? { allowCredentials: allowList as any } : {}),
+        },
+      })) as PublicKeyCredential | null;
+
+      if (assertion && assertion.rawId) {
+        const rawIdBytes = new Uint8Array(assertion.rawId);
+        let binary = "";
+        for (let i = 0; i < rawIdBytes.byteLength; i++) {
+          binary += String.fromCharCode(rawIdBytes[i]);
+        }
+        const credIdBase64 = window.btoa(binary);
+
+        // Отправляем на сервер для валидации и выдачи сессии
+        const verifyRes = await fetch("/api/admin/auth", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "loginPasskey",
+            credentialId: credIdBase64,
+            challenge: chalData.challenge,
+            challengeToken: chalData.challengeToken,
+          }),
+        });
+        const verifyData = await verifyRes.json();
+
+        if (verifyData.ok) {
+          localStorage.setItem("nord_faceid_cred_id", credIdBase64);
+          setFaceIdCredId(credIdBase64);
+          sessionStorage.setItem("nord_admin_auth", "true");
+          setFaceIdStatus("success");
+
+          // Загружаем полные данные
+          const fullRes = await fetch("/api/admin/db");
+          const fullDb = await fullRes.json();
+          setDb(fullDb);
+
+          setTimeout(() => {
+            setIsAuthenticated(true);
+            setFaceIdStatus("idle");
+          }, 400);
+        } else {
+          setFaceIdStatus("idle");
+          alert(verifyData.error || "Ошибка биометрической авторизации");
+        }
+      } else {
+        setFaceIdStatus("idle");
+      }
+    } catch (err: any) {
+      console.log("Face ID verification cancelled or failed:", err);
+      setFaceIdStatus("idle");
+    }
+  };
+
+  const resetFaceId = async () => {
+    if (confirm("Отвязать Face ID от этого устройства?")) {
+      const stored = localStorage.getItem("nord_faceid_cred_id");
+      if (stored) {
+        try {
+          await fetch("/api/admin/auth", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "removePasskey", credentialId: stored }),
+          });
+        } catch {}
+      }
+      localStorage.removeItem("nord_faceid_cred_id");
+      setFaceIdCredId(null);
+      setSavingToast("Face ID отвязан");
+      setTimeout(() => setSavingToast(null), 2000);
+    }
   };
 
   const saveDatabase = async (nextDb: any, toastMsg = "Сохранено на сайте") => {
     setDb(nextDb);
     try {
-      await fetch("/api/admin/db", {
+      const res = await fetch("/api/admin/db", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ db: nextDb }),
       });
+      if (res.status === 401) {
+        setIsAuthenticated(false);
+        alert("Сессия администратора истекла. Пожалуйста, введите PIN-код заново.");
+        return;
+      }
       setSavingToast(toastMsg);
       setTimeout(() => setSavingToast(null), 2200);
     } catch {
@@ -240,21 +579,51 @@ export default function NordIosAdminPage() {
   }
 
   // ==========================================================================
-  // ТРЕБОВАНИЕ 1: ЭКРАН ВХОДА ПО PIN-КОДУ В СТИЛЕ ЭКРАНА БЛОКИРОВКИ IPHONE
+  // ТРЕБОВАНИЕ 1 & 4: ЭКРАН ВХОДА С ВЕКТОРНЫМ APPLE FACE ID И КЛАВИАТУРОЙ
   // ==========================================================================
   if (!isAuthenticated) {
     return (
       <div className="ios-admin-app ios-lockscreen">
+        {/* Dynamic Island / Face ID HUD Pop-up */}
+        {(faceIdStatus === "scanning" || faceIdStatus === "success") && (
+          <div className="ios-faceid-hud-backdrop" onClick={() => setFaceIdStatus("idle")}>
+            <div className="ios-faceid-hud" onClick={(e) => e.stopPropagation()}>
+              <div className={faceIdStatus === "scanning" ? "ios-faceid-hud-pulse" : ""}>
+                <AppleFaceIdIcon
+                  size={54}
+                  color={faceIdStatus === "success" ? "#34c759" : "#ffffff"}
+                  isSuccess={faceIdStatus === "success"}
+                />
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "-0.2px" }}>
+                {faceIdStatus === "success" ? "Подтверждено" : "Face ID"}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="ios-lock-card">
           <div className="ios-lock-badge">
             <span>⚡</span> NORD EXECUTIVE OS
           </div>
 
-          <div className="ios-lock-icon-wrap">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+          {/* Фирменная иконка Apple Face ID сверху над именем */}
+          <div
+            className={`ios-faceid-icon-wrap ${faceIdStatus === "success" ? "success" : ""}`}
+            onClick={() => {
+              if (faceIdCredId) {
+                loginWithFaceId();
+              } else {
+                registerFaceId();
+              }
+            }}
+            title={faceIdCredId ? "Войти по Face ID" : "Привязать Face ID"}
+          >
+            <AppleFaceIdIcon
+              size={34}
+              color={faceIdStatus === "success" ? "#34c759" : "#007aff"}
+              isSuccess={faceIdStatus === "success"}
+            />
           </div>
 
           <h1 className="ios-lock-title">Курбанов Магомед Магомедович</h1>
@@ -270,13 +639,43 @@ export default function NordIosAdminPage() {
             ))}
           </div>
 
+          {/* Крупная кнопка "Войти по Face ID" если биометрия привязана */}
+          {faceIdCredId ? (
+            <button
+              type="button"
+              onClick={loginWithFaceId}
+              className="ios-faceid-btn"
+              title="Сканировать лицо через Apple Face ID"
+            >
+              <AppleFaceIdIcon size={19} color="#007aff" />
+              <span>Войти по Face ID</span>
+            </button>
+          ) : isBioSupported ? (
+            <button
+              type="button"
+              onClick={registerFaceId}
+              className="ios-faceid-btn"
+              style={{ borderColor: "#d1d1d6", color: "#6d6d72", background: "#f8f9fa" }}
+              title="Привязать Face ID на этом iPhone"
+            >
+              <AppleFaceIdIcon size={18} color="#007aff" />
+              <span>Включить вход по Face ID</span>
+            </button>
+          ) : null}
+
           {pinError && (
             <div style={{ color: "#ff3b30", fontSize: "13px", fontWeight: 600, marginBottom: "14px" }}>
               Неверный PIN-код
             </div>
           )}
 
-          {/* Круглая клавиатура iPhone */}
+          {faceIdToast && (
+            <div style={{ color: "#007aff", fontSize: "12px", fontWeight: 600, marginBottom: "12px" }}>
+              {faceIdToast}
+            </div>
+          )}
+
+          {/* Круглая клавиатура iPhone с кнопкой Face ID слева от 0 */}
           <div className="ios-lock-keypad">
             {[
               { num: "1", sub: "" },
@@ -288,12 +687,35 @@ export default function NordIosAdminPage() {
               { num: "7", sub: "PQRS" },
               { num: "8", sub: "TUV" },
               { num: "9", sub: "WXYZ" },
-              { num: "", sub: "", blank: true },
+              { num: "faceid", sub: "FACE ID", isFaceId: true },
               { num: "0", sub: "+" },
               { num: "⌫", sub: "", action: true },
             ].map((key, i) => {
-              if (key.blank) {
-                return <div key={i} className="ios-lock-key blank" />;
+              if (key.isFaceId) {
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      if (faceIdCredId) {
+                        loginWithFaceId();
+                      } else {
+                        registerFaceId();
+                      }
+                    }}
+                    className="ios-lock-key"
+                    title={faceIdCredId ? "Войти через Apple Face ID" : "Привязать Apple Face ID"}
+                  >
+                    <AppleFaceIdIcon
+                      size={28}
+                      color={faceIdStatus === "success" ? "#34c759" : "#007aff"}
+                      isSuccess={faceIdStatus === "success"}
+                    />
+                    <span className="ios-lock-key-sub" style={{ fontSize: "7.5px", color: "#007aff", marginTop: "2px" }}>
+                      FACE ID
+                    </span>
+                  </button>
+                );
               }
               if (key.action) {
                 return (
@@ -326,7 +748,7 @@ export default function NordIosAdminPage() {
             })}
           </div>
 
-          <div style={{ marginTop: "28px" }}>
+          <div style={{ marginTop: "24px" }}>
             <Link href="/" style={{ color: "#8e8e93", fontSize: "13px", textDecoration: "none" }}>
               ← Вернуться на главную витрину NORD
             </Link>
@@ -341,6 +763,24 @@ export default function NordIosAdminPage() {
   // ==========================================================================
   return (
     <div className="ios-admin-app">
+      {/* Dynamic Island / Face ID HUD Pop-up (при регистрации из админки) */}
+      {(faceIdStatus === "scanning" || faceIdStatus === "success") && (
+        <div className="ios-faceid-hud-backdrop" onClick={() => setFaceIdStatus("idle")}>
+          <div className="ios-faceid-hud" onClick={(e) => e.stopPropagation()}>
+            <div className={faceIdStatus === "scanning" ? "ios-faceid-hud-pulse" : ""}>
+              <AppleFaceIdIcon
+                size={54}
+                color={faceIdStatus === "success" ? "#34c759" : "#ffffff"}
+                isSuccess={faceIdStatus === "success"}
+              />
+            </div>
+            <span style={{ fontSize: "13px", fontWeight: 600, letterSpacing: "-0.2px" }}>
+              {faceIdStatus === "success" ? "Подтверждено" : "Face ID"}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* ТРЕБОВАНИЕ 2: ПРЕМИАЛЬНАЯ ИМЕННАЯ ШАПКА РУКОВОДИТЕЛЯ */}
       <header className="ios-navbar">
         <div className="ios-navbar-inner">
@@ -396,6 +836,40 @@ export default function NordIosAdminPage() {
                 ✓ {savingToast}
               </span>
             )}
+
+            {/* Быстрый бейдж Face ID в шапке */}
+            {isBioSupported && (
+              faceIdCredId ? (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    color: "#34c759",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    background: "rgba(52, 199, 89, 0.12)",
+                    padding: "6px 9px",
+                    borderRadius: "10px",
+                  }}
+                  title="Face ID активен на этом iPhone"
+                >
+                  <AppleFaceIdIcon size={14} color="#34c759" isSuccess={true} />
+                  <span>Face ID ✓</span>
+                </span>
+              ) : (
+                <button
+                  onClick={registerFaceId}
+                  className="ios-btn-soft"
+                  title="Привязать Apple Face ID на этом iPhone"
+                  style={{ display: "inline-flex", alignItems: "center", gap: "5px", padding: "6px 10px", fontSize: "12px" }}
+                >
+                  <AppleFaceIdIcon size={15} color="#007aff" />
+                  <span>+ Face ID</span>
+                </button>
+              )
+            )}
+
             <button
               onClick={handleLock}
               className="ios-btn-soft"
@@ -898,9 +1372,9 @@ export default function NordIosAdminPage() {
               </div>
             </div>
 
-            {/* НАСТРОЙКА PIN-КОДА ТЕРМИНАЛА */}
+            {/* НАСТРОЙКА PIN-КОДА И FACE ID ТЕРМИНАЛА */}
             <div className="ios-section-header">БЕЗОПАСНОСТЬ И ВХОД В ТЕРМИНАЛ</div>
-            <div className="ios-card" style={{ padding: "14px", display: "grid", gap: "10px" }}>
+            <div className="ios-card" style={{ padding: "14px", display: "grid", gap: "12px" }}>
               <div>
                 <label style={{ fontSize: "12px", color: "#6d6d72", fontWeight: 600 }}>
                   PIN-код терминала собственника (по умолчанию 2026):
@@ -926,6 +1400,61 @@ export default function NordIosAdminPage() {
               >
                 Сохранить новый PIN-код
               </button>
+
+              {/* Блок привязки Apple Face ID / Touch ID */}
+              <div
+                style={{
+                  borderTop: "0.5px solid #e5e5ea",
+                  paddingTop: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div
+                    style={{
+                      width: "38px",
+                      height: "38px",
+                      borderRadius: "10px",
+                      background: "rgba(0, 122, 255, 0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <AppleFaceIdIcon size={24} color="#007aff" isSuccess={!!faceIdCredId} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "14px", fontWeight: 600, color: "#000" }}>
+                      Apple Face ID / Touch ID
+                    </div>
+                    <div style={{ fontSize: "12px", color: faceIdCredId ? "#34c759" : "#6d6d72" }}>
+                      {faceIdCredId ? "✓ Face ID активен на этом iPhone" : "Биометрический вход не настроен"}
+                    </div>
+                  </div>
+                </div>
+
+                {faceIdCredId ? (
+                  <button
+                    onClick={resetFaceId}
+                    className="ios-btn-danger"
+                    style={{ fontSize: "12px", padding: "6px 12px" }}
+                  >
+                    Отвязать
+                  </button>
+                ) : (
+                  <button
+                    onClick={registerFaceId}
+                    className="ios-btn-soft"
+                    style={{ fontSize: "12px", padding: "6px 12px" }}
+                  >
+                    Привязать
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="ios-section-header">РЕКВИЗИТЫ КОМПАНИИ (ПОДСТАВЛЯЮТСЯ В СЧЕТА И НА САЙТ)</div>

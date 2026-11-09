@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { FALLBACK_CATEGORIES, FALLBACK_PRODUCTS } from "./fallback-catalog";
 
 export type ProductImage = {
@@ -77,6 +78,11 @@ export function normalizeCategorySlug(slug?: string): string | undefined {
 
 function getDynamicDb(): { products?: any[]; categories?: any[] } | null {
   try {
+    const tmpPath = path.join(os.tmpdir(), "nord-db.json");
+    if (fs.existsSync(tmpPath)) {
+      const raw = fs.readFileSync(tmpPath, "utf-8");
+      return JSON.parse(raw);
+    }
     const dbPath = path.join(process.cwd(), "data", "nord-db.json");
     if (fs.existsSync(dbPath)) {
       const raw = fs.readFileSync(dbPath, "utf-8");

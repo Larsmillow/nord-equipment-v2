@@ -482,3 +482,102 @@ body:has(.ios-admin-app) .skip-link {
 .ios-tx-del-btn:active {
   transform: scale(0.9);
 }
+
+/* ==========================================================================
+   APPLE FACE ID / TOUCH ID (WEBAUTHN API HUD & KEYPAD)
+   ========================================================================== */
+.ios-faceid-icon-wrap {
+  width: 58px;
+  height: 58px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007aff;
+  margin-bottom: 14px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.ios-faceid-icon-wrap:active {
+  transform: scale(0.94);
+}
+
+.ios-faceid-icon-wrap.success {
+  color: #34c759;
+  box-shadow: 0 4px 18px rgba(52, 199, 89, 0.25);
+}
+
+.ios-faceid-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #007aff;
+  border: 0.5px solid rgba(0, 122, 255, 0.25);
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 18px;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-faceid-btn:hover {
+  background: #f0f7ff;
+}
+
+.ios-faceid-btn:active {
+  transform: scale(0.96);
+  background: #e1efff;
+}
+
+/* Dynamic Island / Face ID HUD Pop-up */
+.ios-faceid-hud-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ios-faceid-hud {
+  width: 140px;
+  height: 140px;
+  background: rgba(30, 30, 32, 0.94);
+  backdrop-filter: saturate(180%) blur(30px);
+  -webkit-backdrop-filter: saturate(180%) blur(30px);
+  border-radius: 30px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  gap: 12px;
+  animation: iosFaceIdPop 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ios-faceid-hud-pulse {
+  animation: iosFacePulse 1.2s infinite ease-in-out;
+}
+
+@keyframes iosFaceIdPop {
+  0% { transform: scale(0.75); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes iosFacePulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
